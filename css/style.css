@@ -1,0 +1,42 @@
+body {
+    color: #e0e7ff; /* Light blue-purple for text on dark background */
+    background-color: #1a0033; /* Darker background for consistency */
+}
+
+/* Custom Tailwind class for background image */
+.app-background {
+    background-image: url('https://res.cloudinary.com/dimqqmfx6/image/upload/v1761372479/u1025060723_background_g2kphv.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-opacity: 80; /* Note: bg-opacity is a Tailwind utility, not a direct CSS property on background-image */
+}
+
+/* Font Awesome Custom Hosting (if you choose to host these files yourself) */
+/* If using the CDN provided in index.html, these @font-face rules are not needed. */
+/* If you want to self-host, download the webfonts and place them in assets/webfonts/ */
+/*
+@font-face {
+    font-family: 'Font Awesome 6 Free';
+    src: url('../assets/webfonts/fa-regular-400.woff2') format('woff2'),
+         url('../assets/webfonts/fa-regular-400.ttf') format('truetype');
+    font-weight: 400;
+    font-display: block;
+}
+
+@font-face {
+    font-family: 'Font Awesome 6 Free';
+    src: url('../assets/webfonts/fa-solid-900.woff2') format('woff2'),
+         url('../assets/webfonts/fa-solid-900.ttf') format('truetype');
+    font-weight: 900;
+    font-display: block;
+}
+
+@font-face {
+    font-family: 'Font Awesome 6 Brands';
+    src: url('../assets/webfonts/fa-brands-400.woff2') format('woff2'),
+         url('../assets/webfonts/fa-brands-400.ttf') format('truetype');
+    font-weight: 400;
+    font-display: block;
+}
+*/

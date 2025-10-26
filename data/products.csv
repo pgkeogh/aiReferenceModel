@@ -1,0 +1,22 @@
+id,name,vendorId,capabilityIds
+p1,Amazon S3,v1,dataLake,storage
+p2,Azure ML,v2,aiOnboarding,aiTesting,aiDeployment,modelManagementCustomization,aiHostingScalability
+p3,Google AI Platform,v3,aiOnboarding,aiTesting,aiIntegrations,aiDeployment,aiHostingScalability,agenticEngines
+p4,IBM Watson,v4,aiOnboarding,aiIntegrations,webUIs,developerEcosystem,aiMonitoring,aiGateway
+p5,Amazon SageMaker,v1,aiOnboarding,aiTesting,aiDeployment,modelManagementCustomization,aiHostingScalability
+p6,Azure Data Lake Storage,v2,dataLake,storage
+p7,Google Cloud Storage,v3,dataLake,storage
+p8,Amazon EKS,v1,virtualisation,aiDeployment
+p9,Azure Kubernetes Service,v2,virtualisation,aiDeployment
+p10,Google Kubernetes Engine,v3,virtualisation,aiDeployment
+p11,Pinecone Vector DB,v5,vectorDB
+p12,Weaviate Cloud,v6,vectorDB
+p13,Azure AI Vision,v2,aiIntegrations
+p14,Google Cloud Vision AI,v3,aiIntegrations
+p15,AWS Lambda,v1,aiHostingScalability
+p16,Azure Functions,v2,aiHostingScalability
+p17,Google Cloud Functions,v3,aiHostingScalability
+p18,AWS AI Services,v1,webUIs,developerEcosystem,aiIntegrations
+p19,Azure AI Services,v2,webUIs,developerEcosystem,aiIntegrations
+p20,Google Cloud AI Services,v3,webUIs,developerEcosystem,aiIntegrations
+p_cn,Cloud Native Base Services,v_cn,dataLake,virtualisation,vectorDB,storage,aiOnboarding,aiTesting,aiIntegrations,webUIs,developerEcosystem,aiCompliance,aiGovernance,aiMonitoring,aiGateway,aiSecurity,modelManagementCustomization,agenticEngines,aiDeployment,aiHostingScalability
