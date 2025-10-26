@@ -1,151 +1,213 @@
-import { vendors, products, capabilities, generateUniqueId, uiElements, selectedVendorId, selectedProductId, selectedCapabilityId, setVendors, setProducts, setCapabilities } from './dataStore.js';
-import { renderVendorEditor, renderProductEditor, renderCapabilityEditor, renderCapabilityBoxes, renderVendorSelector } from './uiRenderer.js';
-import { handleVendorSelection } from './main.js'; // For re-applying vendor selection logic
+import {
+  vendors,
+  products,
+  capabilities,
+  setVendors,
+  setProducts,
+  setCapabilities,
+  generateUniqueId,
+  uiElements,
+  selectedVendorId,
+  setSelectedVendorId,
+  selectedProductId,
+  setSelectedProductId,
+  selectedCapabilityId,
+  setSelectedCapabilityId,
+} from "./dataStore.js";
+import {
+  renderVendorEditor,
+  renderProductEditor,
+  renderCapabilityEditor,
+  renderVendorSelector,
+  renderAllCapabilityBoxes,
+  updateCapabilityBoxProductDisplay,
+} from "./uiRenderer.js"; // UPDATED IMPORTS HERE
+import { closeDataEditorModal } from "./modals.js";
+import { handleVendorSelection } from "./main.js";
 
-/** Adds a new vendor. */
-export function addVendor() {
-    const name = uiElements.vendorNameInput.value.trim();
-    if (!name) { alert('Vendor name cannot be empty.'); return; }
-    if (vendors.some(v => v.name.toLowerCase() === name.toLowerCase())) { alert('Vendor with this name already exists.'); return; }
-    vendors.push({ id: generateUniqueId(), name });
+// --- Vendor Management ---
+
+uiElements.addVendorButton.addEventListener("click", () => {
+  const name = uiElements.vendorNameInput.value.trim();
+  if (name) {
+    setVendors([...vendors, { id: generateUniqueId(), name }]);
     renderVendorEditor();
-    renderProductEditor();
-    renderVendorSelector();
-}
+    renderVendorSelector(); // Update main vendor dropdown
+    handleVendorSelection(); // Re-apply product assignments
+  }
+});
 
-/** Edits an existing vendor. */
-export function editVendor() {
-    if (!selectedVendorId) { alert('Select a vendor to edit.'); return; }
+uiElements.editVendorButton.addEventListener("click", () => {
+  if (selectedVendorId) {
     const name = uiElements.vendorNameInput.value.trim();
-    if (!name) { alert('Vendor name cannot be empty.'); return; }
-    if (vendors.some(v => v.name.toLowerCase() === name.toLowerCase() && v.id !== selectedVendorId)) { alert('Another vendor with this name already exists.'); return; }
-
-    const vendor = vendors.find(v => v.id === selectedVendorId);
-    if (vendor) {
-        vendor.name = name;
-        renderVendorEditor();
-        renderProductEditor();
-        renderVendorSelector();
-        handleVendorSelection();
+    if (name) {
+      setVendors(
+        vendors.map((v) => (v.id === selectedVendorId ? { ...v, name } : v))
+      );
+      renderVendorEditor();
+      renderVendorSelector(); // Update main vendor dropdown
+      handleVendorSelection(); // Re-apply product assignments
     }
-}
+  }
+});
 
-/**
- * Deletes a vendor and its associated products.
- * @param {string} id - The ID of the vendor to delete.
- */
 export function deleteVendor(id) {
-    if (!confirm('Are you sure you want to delete this vendor? All associated products will also be deleted.')) return;
-    setVendors(vendors.filter(v => v.id !== id));
-    setProducts(products.filter(p => p.vendorId !== id));
-    capabilities.forEach(c => {
-        if (products.find(p => p.id === c.currentProductId)?.vendorId === id) {
-            c.currentProductId = null;
-        }
+  if (
+    confirm(
+      "Are you sure you want to delete this vendor? This will also delete all associated products and unassign capabilities."
+    )
+  ) {
+    // Delete associated products first
+    setProducts(products.filter((p) => p.vendorId !== id));
+
+    // Unassign capabilities that were using products from this vendor
+    capabilities.forEach((c) => {
+      if (
+        products.some((p) => p.id === c.currentProductId && p.vendorId === id)
+      ) {
+        c.currentProductId = null;
+      }
     });
+
+    // Delete the vendor
+    setVendors(vendors.filter((v) => v.id !== id));
+
     renderVendorEditor();
-    renderProductEditor();
-    renderCapabilityBoxes();
-    renderVendorSelector();
-    handleVendorSelection();
+    renderProductEditor(); // Products might have changed
+    renderVendorSelector(); // Update main vendor dropdown
+    renderAllCapabilityBoxes(); // Re-render all capability boxes if anything was unassigned
+    handleVendorSelection(); // Re-apply product assignments
+  }
 }
 
-/** Adds a new product. */
-export function addProduct() {
-    const name = uiElements.productNameInput.value.trim();
-    const vendorId = uiElements.productVendorSelect.value;
-    const capabilityIds = Array.from(uiElements.productCapabilitiesCheckboxes.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+// --- Product Management ---
 
-    if (!name) { alert('Product name cannot be empty.'); return; }
-    if (!vendorId) { alert('Please select a vendor for the product.'); return; }
-    if (products.some(p => p.name.toLowerCase() === name.toLowerCase() && p.vendorId === vendorId)) { alert('Product with this name already exists for this vendor.'); return; }
+uiElements.addProductButton.addEventListener("click", () => {
+  const name = uiElements.productNameInput.value.trim();
+  const vendorId = uiElements.productVendorSelect.value;
+  const capabilityIds = Array.from(
+    uiElements.productCapabilitiesCheckboxes.querySelectorAll("input:checked")
+  ).map((cb) => cb.value);
 
-    products.push({ id: generateUniqueId(), name, vendorId, capabilityIds });
+  if (name && vendorId) {
+    setProducts([
+      ...products,
+      { id: generateUniqueId(), name, vendorId, capabilityIds },
+    ]);
     renderProductEditor();
-    handleVendorSelection();
-}
+    renderAllCapabilityBoxes(); // Re-render all capability boxes to reflect potential new product availability
+    handleVendorSelection(); // Re-apply product assignments
+  } else {
+    alert("Please enter product name and select a vendor.");
+  }
+});
 
-/** Edits an existing product. */
-export function editProduct() {
-    if (!selectedProductId) { alert('Select a product to edit.'); return; }
+uiElements.editProductButton.addEventListener("click", () => {
+  if (selectedProductId) {
     const name = uiElements.productNameInput.value.trim();
     const vendorId = uiElements.productVendorSelect.value;
-    const capabilityIds = Array.from(uiElements.productCapabilitiesCheckboxes.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+    const capabilityIds = Array.from(
+      uiElements.productCapabilitiesCheckboxes.querySelectorAll("input:checked")
+    ).map((cb) => cb.value);
 
-    if (!name) { alert('Product name cannot be empty.'); return; }
-    if (!vendorId) { alert('Please select a vendor for the product.'); return; }
-    if (products.some(p => p.name.toLowerCase() === name.toLowerCase() && p.vendorId === vendorId && p.id !== selectedProductId)) { alert('Another product with this name already exists for this vendor.'); return; }
-
-    const product = products.find(p => p.id === selectedProductId);
-    if (product) {
-        product.name = name;
-        product.vendorId = vendorId;
-        product.capabilityIds = capabilityIds;
-        renderProductEditor();
-        handleVendorSelection();
-        renderCapabilityBoxes();
+    if (name && vendorId) {
+      setProducts(
+        products.map((p) =>
+          p.id === selectedProductId
+            ? { ...p, name, vendorId, capabilityIds }
+            : p
+        )
+      );
+      renderProductEditor();
+      renderAllCapabilityBoxes(); // Re-render all capability boxes to reflect potential product changes
+      handleVendorSelection(); // Re-apply product assignments
+    } else {
+      alert("Please enter product name and select a vendor.");
     }
-}
+  }
+});
 
-/**
- * Deletes a product.
- * @param {string} id - The ID of the product to delete.
- */
 export function deleteProduct(id) {
-    if (!confirm('Are you sure you want to delete this product?')) return;
-    setProducts(products.filter(p => p.id !== id));
-    capabilities.forEach(c => {
-        if (c.currentProductId === id) {
-            c.currentProductId = null;
-        }
+  if (
+    confirm(
+      "Are you sure you want to delete this product? It will be unassigned from any capabilities."
+    )
+  ) {
+    // Unassign capability if this product was selected
+    capabilities.forEach((c) => {
+      if (c.currentProductId === id) {
+        c.currentProductId = null;
+      }
     });
+    setProducts(products.filter((p) => p.id !== id));
     renderProductEditor();
-    renderCapabilityBoxes();
-    handleVendorSelection();
+    renderAllCapabilityBoxes(); // Re-render all capability boxes to reflect product removal
+    handleVendorSelection(); // Re-apply product assignments
+  }
 }
 
-/** Adds a new capability. */
-export function addCapability() {
-    const name = uiElements.capabilityNameInput.value.trim();
-    const section = uiElements.capabilitySectionSelect.value;
-    if (!name) { alert('Capability name cannot be empty.'); return; }
-    if (capabilities.some(c => c.name.toLowerCase() === name.toLowerCase())) { alert('Capability with this name already exists.'); return; }
+// --- Capability Management ---
 
-    capabilities.push({ id: generateUniqueId(), name, section, currentProductId: null });
+uiElements.addCapabilityButton.addEventListener("click", () => {
+  const name = uiElements.capabilityNameInput.value.trim();
+  const section = uiElements.capabilitySectionSelect.value;
+  if (name && section) {
+    setCapabilities([
+      ...capabilities,
+      { id: generateUniqueId(), name, section, currentProductId: null },
+    ]);
     renderCapabilityEditor();
-    renderProductEditor();
-}
+    renderProductEditor(); // Capabilities list for products might have changed
+    renderAllCapabilityBoxes(); // NEW: Render all capability boxes to show the new one
+    handleVendorSelection(); // Re-apply product assignments
+  } else {
+    alert("Please enter capability name and select a section.");
+  }
+});
 
-/** Edits an existing capability. */
-export function editCapability() {
-    if (!selectedCapabilityId) { alert('Select a capability to edit.'); return; }
+uiElements.editCapabilityButton.addEventListener("click", () => {
+  if (selectedCapabilityId) {
     const name = uiElements.capabilityNameInput.value.trim();
     const section = uiElements.capabilitySectionSelect.value;
-    if (!name) { alert('Capability name cannot be empty.'); return; }
-    if (capabilities.some(c => c.name.toLowerCase() === name.toLowerCase() && c.id !== selectedCapabilityId)) { alert('Another capability with this name already exists.'); return; }
-
-    const capability = capabilities.find(c => c.id === selectedCapabilityId);
-    if (capability) {
-        capability.name = name;
-        capability.section = section;
-        renderCapabilityEditor();
-        renderProductEditor();
-        renderCapabilityBoxes();
+    if (name && section) {
+      setCapabilities(
+        capabilities.map((c) =>
+          c.id === selectedCapabilityId ? { ...c, name, section } : c
+        )
+      );
+      renderCapabilityEditor();
+      renderProductEditor(); // Capabilities list for products might have changed
+      renderAllCapabilityBoxes(); // NEW: Re-render all capability boxes to update existing one
+      handleVendorSelection(); // Re-apply product assignments
+    } else {
+      alert("Please enter capability name and select a section.");
     }
+  }
+});
+
+export function deleteCapability(id) {
+  if (
+    confirm(
+      "Are you sure you want to delete this capability? It will be removed from all products and the main display."
+    )
+  ) {
+    // Remove from products' capability lists
+    setProducts(
+      products.map((p) => ({
+        ...p,
+        capabilityIds: p.capabilityIds.filter((capId) => capId !== id),
+      }))
+    );
+    setCapabilities(capabilities.filter((c) => c.id !== id));
+    renderCapabilityEditor();
+    renderProductEditor(); // Products might have changed (checkboxes)
+    renderAllCapabilityBoxes(); // NEW: Completely re-render capability boxes
+    handleVendorSelection(); // Re-apply product assignments
+  }
 }
 
-/**
- * Deletes a capability.
- * @param {string} id - The ID of the capability to delete.
- */
-export function deleteCapability(id) {
-    if (!confirm('Are you sure you want to delete this capability? All products associated with it will lose this capability.')) return;
-    setCapabilities(capabilities.filter(c => c.id !== id));
-    products.forEach(p => {
-        p.capabilityIds = p.capabilityIds.filter(cid => cid !== id);
-    });
-    renderCapabilityEditor();
-    renderProductEditor();
-    renderCapabilityBoxes();
-    handleVendorSelection();
-}
+// --- Save & Close Data Editor ---
+
+uiElements.saveCloseDataEditorButton.addEventListener("click", () =>
+  closeDataEditorModal(true)
+);

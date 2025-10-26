@@ -1,255 +1,346 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta property="og:title" content="AI Platform & Data Model Visualizer">
-    <meta property="og:description" content="Interactive visualization of AI platform capabilities, vendors, and products.">
-    <meta property="og:image" content="https://cdn.simulationtheory.ai/gasset/?asset=img&prompt=abstract data visualization&w=64&h=64">
-    <meta property="og:type" content="website">
-    <link rel="icon" href="https://cdn.simulationtheory.ai/gasset/?asset=img&prompt=abstract data icon&w=32&h=32&transparent=true" type="image/png">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta property="og:title" content="AI Platform & Data Model Visualizer" />
+    <meta
+      property="og:description"
+      content="Interactive visualization of AI platform capabilities, vendors, and products."
+    />
+    <meta
+      property="og:image"
+      content="https://cdn.simulationtheory.ai/gasset/?asset=img&prompt=abstract data visualization&w=64&h=64"
+    />
+    <meta property="og:type" content="website" />
+    <link
+      rel="icon"
+      href="https://cdn.simulationtheory.ai/gasset/?asset=img&prompt=abstract data icon&w=32&h=32&transparent=true"
+      type="image/png"
+    />
     <title>AI Platform & Data Model Visualizer</title>
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- Font Awesome CDN (using a standard CDN for simplicity) -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js" crossorigin="anonymous"></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+      rel="stylesheet"
+    />
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"
+      crossorigin="anonymous"
+    ></script>
 
     <!-- Papa Parse for CSV handling CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 
     <!-- Custom Styles -->
-    <link rel="stylesheet" href="css/style.css">
-</head>
-<body class="font-sans p-4">
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body class="font-sans p-4">
+    <div
+      id="main-app"
+      class="max-w-7xl mx-auto shadow-xl rounded-lg p-6 transition-all duration-500 ease-in-out transform translate-y-0 opacity-100 text-purple-200 app-background"
+    >
+      <h1
+        class="text-3xl font-bold text-center text-purple-100 mb-6 drop-shadow-lg"
+      >
+        AI Platform & Data Model Visualizer
+      </h1>
 
-    <div id="main-app" class="max-w-7xl mx-auto shadow-xl rounded-lg p-6 transition-all duration-500 ease-in-out transform translate-y-0 opacity-100 text-purple-200 app-background">
-        <h1 class="text-3xl font-bold text-center text-purple-100 mb-6 drop-shadow-lg">AI Platform & Data Model Visualizer</h1>
-
-        <div class="flex flex-col md:flex-row gap-6">
-            <!-- Left Column: Infrastructure/Data Layer -->
-            <div class="flex-1 space-y-4">
-                <div class="flex flex-col justify-center items-center p-2 rounded-lg text-center font-bold text-xl py-3 min-h-[60px] shadow-md bg-purple-700 text-purple-100">Infrastructure/Data Layer</div>
-                <div id="dataLake" class="flex flex-col justify-center items-center p-2 rounded-lg text-center cursor-pointer transition-all duration-200 ease-in-out min-h-[60px] shadow-md hover:shadow-lg hover:-translate-y-1 active:translate-y-0 active:shadow-md transform bg-purple-800 border-2 border-purple-500 text-purple-200 hover:bg-purple-700" data-capability-id="dataLake">
-                    <span class="font-semibold">Data Lake</span>
-                    <span class="text-sm font-semibold mt-1" data-product-display></span>
-                </div>
-                <div id="virtualisation" class="flex flex-col justify-center items-center p-2 rounded-lg text-center cursor-pointer transition-all duration-200 ease-in-out min-h-[60px] shadow-md hover:shadow-lg hover:-translate-y-1 active:translate-y-0 active:shadow-md transform bg-purple-800 border-2 border-purple-500 text-purple-200 hover:bg-purple-700" data-capability-id="virtualisation">
-                    <span class="font-semibold">Virtualisation</span>
-                    <span class="text-sm font-semibold mt-1" data-product-display></span>
-                </div>
-                <div id="vectorDB" class="flex flex-col justify-center items-center p-2 rounded-lg text-center cursor-pointer transition-all duration-200 ease-in-out min-h-[60px] shadow-md hover:shadow-lg hover:-translate-y-1 active:translate-y-0 active:shadow-md transform bg-purple-800 border-2 border-purple-500 text-purple-200 hover:bg-purple-700" data-capability-id="vectorDB">
-                    <span class="font-semibold">Vector DB</span>
-                    <span class="text-sm font-semibold mt-1" data-product-display></span>
-                </div>
-                <div id="storage" class="flex flex-col justify-center items-center p-2 rounded-lg text-center cursor-pointer transition-all duration-200 ease-in-out min-h-[60px] shadow-md hover:shadow-lg hover:-translate-y-1 active:translate-y-0 active:shadow-md transform bg-purple-800 border-2 border-purple-500 text-purple-200 hover:bg-purple-700" data-capability-id="storage">
-                    <span class="font-semibold">Storage</span>
-                    <span class="text-sm font-semibold mt-1" data-product-display></span>
-                </div>
-            </div>
-
-            <!-- Middle Column: AI Platform Capabilities & Governance -->
-            <div class="flex-1 space-y-4">
-                <div class="flex flex-col justify-center items-center p-2 rounded-lg text-center font-bold text-xl py-3 min-h-[60px] shadow-md bg-blue-700 text-blue-100">Business Industry Specific Use Cases</div>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div id="aiOnboarding" class="flex flex-col justify-center items-center p-2 rounded-lg text-center cursor-pointer transition-all duration-200 ease-in-out min-h-[60px] shadow-md hover:shadow-lg hover:-translate-y-1 active:translate-y-0 active:shadow-md transform bg-blue-800 border-2 border-blue-500 text-blue-200 hover:bg-blue-700" data-capability-id="aiOnboarding">
-                        <span class="font-semibold">AI Onboarding</span>
-                        <span class="text-sm font-semibold mt-1" data-product-display></span>
-                    </div>
-                    <div id="aiTesting" class="flex flex-col justify-center items-center p-2 rounded-lg text-center cursor-pointer transition-all duration-200 ease-in-out min-h-[60px] shadow-md hover:shadow-lg hover:-translate-y-1 active:translate-y-0 active:shadow-md transform bg-blue-800 border-2 border-blue-500 text-blue-200 hover:bg-blue-700" data-capability-id="aiTesting">
-                        <span class="font-semibold">AI Testing</span>
-                        <span class="text-sm font-semibold mt-1" data-product-display></span>
-                    </div>
-                    <div id="aiIntegrations" class="flex flex-col justify-center items-center p-2 rounded-lg text-center cursor-pointer transition-all duration-200 ease-in-out min-h-[60px] shadow-md hover:shadow-lg hover:-translate-y-1 active:translate-y-0 active:shadow-md transform bg-blue-800 border-2 border-blue-500 text-blue-200 hover:bg-blue-700" data-capability-id="aiIntegrations">
-                        <span class="font-semibold">AI Integrations</span>
-                        <span class="text-sm font-semibold mt-1" data-product-display></span>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div id="webUIs" class="flex flex-col justify-center items-center p-2 rounded-lg text-center cursor-pointer transition-all duration-200 ease-in-out min-h-[60px] shadow-md hover:shadow-lg hover:-translate-y-1 active:translate-y-0 active:shadow-md transform bg-blue-800 border-2 border-blue-500 text-blue-200 hover:bg-blue-700" data-capability-id="webUIs">
-                        <span class="font-semibold">WebUIs</span>
-                        <span class="text-sm font-semibold mt-1" data-product-display></span>
-                    </div>
-                    <div id="developerEcosystem" class="flex flex-col justify-center items-center p-2 rounded-lg text-center cursor-pointer transition-all duration-200 ease-in-out min-h-[60px] shadow-md hover:shadow-lg hover:-translate-y-1 active:translate-y-0 active:shadow-md transform bg-blue-800 border-2 border-blue-500 text-blue-200 hover:bg-blue-700" data-capability-id="developerEcosystem">
-                        <span class="font-semibold">Developer Ecosystem</span>
-                        <span class="text-sm font-semibold mt-1" data-product-display></span>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div id="aiCompliance" class="flex flex-col justify-center items-center p-2 rounded-lg text-center cursor-pointer transition-all duration-200 ease-in-out min-h-[60px] shadow-md hover:shadow-lg hover:-translate-y-1 active:translate-y-0 active:shadow-md transform bg-blue-800 border-2 border-blue-500 text-blue-200 hover:bg-blue-700" data-capability-id="aiCompliance">
-                        <span class="font-semibold">AI Compliance</span>
-                        <span class="text-sm font-semibold mt-1" data-product-display></span>
-                    </div>
-                    <div id="aiGovernance" class="flex flex-col justify-center items-center p-2 rounded-lg text-center cursor-pointer transition-all duration-200 ease-in-out min-h-[60px] shadow-md hover:shadow-lg hover:-translate-y-1 active:translate-y-0 active:shadow-md transform bg-blue-800 border-2 border-blue-500 text-blue-200 hover:bg-blue-700" data-capability-id="aiGovernance">
-                        <span class="font-semibold">AI Governance</span>
-                        <span class="text-sm font-semibold mt-1" data-product-display></span>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div id="aiMonitoring" class="flex flex-col justify-center items-center p-2 rounded-lg text-center cursor-pointer transition-all duration-200 ease-in-out min-h-[60px] shadow-md hover:shadow-lg hover:-translate-y-1 active:translate-y-0 active:shadow-md transform bg-blue-800 border-2 border-blue-500 text-blue-200 hover:bg-blue-700" data-capability-id="aiMonitoring">
-                        <span class="font-semibold">AI Monitoring</span>
-                        <span class="text-sm font-semibold mt-1" data-product-display></span>
-                    </div>
-                    <div id="aiGateway" class="flex flex-col justify-center items-center p-2 rounded-lg text-center cursor-pointer transition-all duration-200 ease-in-out min-h-[60px] shadow-md hover:shadow-lg hover:-translate-y-1 active:translate-y-0 active:shadow-md transform bg-blue-800 border-2 border-blue-500 text-blue-200 hover:bg-blue-700" data-capability-id="aiGateway">
-                        <span class="font-semibold">AI Gateway</span>
-                        <span class="text-sm font-semibold mt-1" data-product-display></span>
-                    </div>
-                    <div id="aiSecurity" class="flex flex-col justify-center items-center p-2 rounded-lg text-center cursor-pointer transition-all duration-200 ease-in-out min-h-[60px] shadow-md hover:shadow-lg hover:-translate-y-1 active:translate-y-0 active:shadow-md transform bg-blue-800 border-2 border-blue-500 text-blue-200 hover:bg-blue-700" data-capability-id="aiSecurity">
-                        <span class="font-semibold">AI Security</span>
-                        <span class="text-sm font-semibold mt-1" data-product-display></span>
-                    </div>
-                </div>
-
-                <div class="flex flex-col justify-center items-center p-2 rounded-lg text-center font-bold text-xl py-3 min-h-[60px] shadow-md bg-purple-800 text-purple-100">Standards and protocols: A2A, MCP, others</div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div id="modelManagementCustomization" class="flex flex-col justify-center items-center p-2 rounded-lg text-center cursor-pointer transition-all duration-200 ease-in-out min-h-[60px] shadow-md hover:shadow-lg hover:-translate-y-1 active:translate-y-0 active:shadow-md transform bg-blue-800 border-2 border-blue-500 text-blue-200 hover:bg-blue-700" data-capability-id="modelManagementCustomization">
-                        <span class="font-semibold">Model Management + Customization</span>
-                        <span class="text-sm font-semibold mt-1" data-product-display></span>
-                    </div>
-                    <div id="agenticEngines" class="flex flex-col justify-center items-center p-2 rounded-lg text-center cursor-pointer transition-all duration-200 ease-in-out min-h-[60px] shadow-md hover:shadow-lg hover:-translate-y-1 active:translate-y-0 active:shadow-md transform bg-blue-800 border-2 border-blue-500 text-blue-200 hover:bg-blue-700" data-capability-id="agenticEngines">
-                        <span class="font-semibold">Agentic Engines</span>
-                        <span class="text-sm font-semibold mt-1" data-product-display></span>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div id="aiDeployment" class="flex flex-col justify-center items-center p-2 rounded-lg text-center cursor-pointer transition-all duration-200 ease-in-out min-h-[60px] shadow-md hover:shadow-lg hover:-translate-y-1 active:translate-y-0 active:shadow-md transform bg-blue-800 border-2 border-blue-500 text-blue-200 hover:bg-blue-700" data-capability-id="aiDeployment">
-                        <span class="font-semibold">AI Deployment</span>
-                        <span class="text-sm font-semibold mt-1" data-product-display></span>
-                    </div>
-                    <div id="aiHostingScalability" class="flex flex-col justify-center items-center p-2 rounded-lg text-center cursor-pointer transition-all duration-200 ease-in-out min-h-[60px] shadow-md hover:shadow-lg hover:-translate-y-1 active:translate-y-0 active:shadow-md transform bg-blue-800 border-2 border-blue-500 text-blue-200 hover:bg-blue-700" data-capability-id="aiHostingScalability">
-                        <span class="font-semibold">AI Hosting + Scalability</span>
-                        <span class="text-sm font-semibold mt-1" data-product-display></span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right Column: Controls & Chatbot -->
-            <div class="flex flex-col space-y-4">
-                <div class="flex flex-col items-start space-y-4 p-4 bg-purple-900 bg-opacity-70 rounded-lg shadow-md">
-                    <div class="flex flex-col w-full space-y-2">
-                        <label for="vendor-select" class="font-semibold text-lg text-purple-200">Select Vendor:</label>
-                        <select id="vendor-select" class="p-2 border border-purple-600 rounded-md shadow-sm bg-purple-800 text-purple-100 focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all duration-200 ease-in-out hover:border-purple-400 w-full">
-                            <option value="">No Vendor Selected</option>
-                        </select>
-                    </div>
-                    <button id="manage-data-button" class="bg-purple-700 text-white px-4 py-2 rounded-md hover:bg-purple-600 transition-all duration-200 ease-in-out shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-md w-full">
-                        <i class="fas fa-database mr-2"></i>Manage Data
-                    </button>
-                </div>
-
-                <!-- Chatbot Section -->
-                <div class="bg-purple-900 bg-opacity-70 p-4 rounded-lg shadow-md flex flex-col h-[400px]">
-                    <h3 class="text-xl font-bold mb-4 text-purple-100">AI Chatbot</h3>
-                    <div id="chat-messages" class="flex-1 overflow-y-auto border border-purple-700 rounded-md p-2 mb-4 bg-purple-800 text-purple-100">
-                        <div class="text-purple-300 italic">Type a message to start the conversation...</div>
-                    </div>
-                    <div class="flex">
-                        <input type="text" id="chat-input" placeholder="Ask a question..." class="p-2 border border-purple-600 rounded-l-md w-full focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all duration-200 ease-in-out bg-purple-800 text-purple-100">
-                        <button id="send-chat-button" class="bg-blue-600 text-white px-4 py-2 rounded-r-md hover:bg-blue-500 transition-all duration-200 ease-in-out shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-md">
-                            <i class="fas fa-paper-plane"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
+      <div class="flex flex-col md:flex-row gap-6">
+        <!-- Left Column: Infrastructure/Data Layer -->
+        <div class="flex-1 space-y-4">
+          <div
+            class="flex flex-col justify-center items-center p-2 rounded-lg text-center font-bold text-xl py-3 min-h-[60px] shadow-md bg-purple-700 text-purple-100"
+          >
+            Infrastructure/Data Layer
+          </div>
+          <!-- CONTAINER FOR INFRASTRUCTURE/DATA CAPABILITIES (JS will populate this) -->
+          <div
+            id="infrastructure-data-capabilities-container"
+            class="space-y-4"
+          >
+            <!-- Dynamic capability boxes will be rendered here by JavaScript -->
+          </div>
         </div>
+
+        <!-- Middle Column: AI Platform Capabilities & Governance -->
+        <div class="flex-1 space-y-4">
+          <div
+            class="flex flex-col justify-center items-center p-2 rounded-lg text-center font-bold text-xl py-3 min-h-[60px] shadow-md bg-blue-700 text-blue-100"
+          >
+            Business Industry Specific Use Cases
+          </div>
+          <!-- CONTAINER FOR AI PLATFORM CAPABILITIES (JS will populate this) -->
+          <div id="ai-platform-capabilities-container" class="space-y-4">
+            <!-- Dynamic capability boxes will be rendered here by JavaScript -->
+          </div>
+        </div>
+
+        <!-- Right Column: Controls & Chatbot -->
+        <div class="flex flex-col space-y-4">
+          <div
+            class="flex flex-col items-start space-y-4 p-4 bg-purple-900 bg-opacity-70 rounded-lg shadow-md"
+          >
+            <div class="flex flex-col w-full space-y-2">
+              <label
+                for="vendor-select"
+                class="font-semibold text-lg text-purple-200"
+                >Select Vendor:</label
+              >
+              <select
+                id="vendor-select"
+                class="p-2 border border-purple-600 rounded-md shadow-sm bg-purple-800 text-purple-100 focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all duration-200 ease-in-out hover:border-purple-400 w-full"
+              >
+                <option value="">No Vendor Selected</option>
+              </select>
+            </div>
+            <button
+              id="manage-data-button"
+              class="bg-purple-700 text-white px-4 py-2 rounded-md hover:bg-purple-600 transition-all duration-200 ease-in-out shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-md w-full"
+            >
+              <i class="fas fa-database mr-2"></i>Manage Data
+            </button>
+          </div>
+
+          <!-- Chatbot Section -->
+          <div
+            class="bg-purple-900 bg-opacity-70 p-4 rounded-lg shadow-md flex flex-col h-[400px]"
+          >
+            <h3 class="text-xl font-bold mb-4 text-purple-100">AI Chatbot</h3>
+            <div
+              id="chat-messages"
+              class="flex-1 overflow-y-auto border border-purple-700 rounded-md p-2 mb-4 bg-purple-800 text-purple-100"
+            >
+              <div class="text-purple-300 italic">
+                Type a message to start the conversation...
+              </div>
+            </div>
+            <div class="flex">
+              <input
+                type="text"
+                id="chat-input"
+                placeholder="Ask a question..."
+                class="p-2 border border-purple-600 rounded-l-md w-full focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all duration-200 ease-in-out bg-purple-800 text-purple-100"
+              />
+              <button
+                id="send-chat-button"
+                class="bg-blue-600 text-white px-4 py-2 rounded-r-md hover:bg-blue-500 transition-all duration-200 ease-in-out shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-md"
+              >
+                <i class="fas fa-paper-plane"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-
     <!-- Product Selection Modal -->
-    <div id="product-selection-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 transition-opacity duration-300 ease-in-out opacity-0 pointer-events-none">
-        <div class="bg-purple-900 p-6 rounded-lg shadow-xl w-[90%] max-w-[500px] relative transition-transform duration-300 ease-in-out transform scale-95 text-purple-100">
-            <span class="absolute top-2 right-4 text-3xl cursor-pointer text-purple-400 hover:text-purple-100 transition-colors duration-200" id="close-product-modal">&times;</span>
-            <h2 class="text-2xl font-bold mb-4">Select Product for <span id="modal-capability-name" class="text-blue-400"></span></h2>
-            <div id="modal-product-list" class="space-y-2 mb-4 max-h-60 overflow-y-auto">
-                <!-- Products will be dynamically loaded here -->
-            </div>
-            <div class="flex justify-end gap-2 mt-4">
-                <button id="clear-product-selection" class="bg-gray-700 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-all duration-200 ease-in-out shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-md">
-                    Clear Selection
-                </button>
-                <button id="close-product-modal-button" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-500 transition-all duration-200 ease-in-out shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-md">Close</button>
-            </div>
+    <div
+      id="product-selection-modal"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 transition-opacity duration-300 ease-in-out opacity-0 pointer-events-none"
+    >
+      <div
+        class="bg-purple-900 p-6 rounded-lg shadow-xl w-[90%] max-w-[500px] relative transition-transform duration-300 ease-in-out transform scale-95 text-purple-100"
+      >
+        <span
+          class="absolute top-2 right-4 text-3xl cursor-pointer text-purple-400 hover:text-purple-100 transition-colors duration-200"
+          id="close-product-modal"
+          >&times;</span
+        >
+        <h2 class="text-2xl font-bold mb-4">
+          Select Product for
+          <span id="modal-capability-name" class="text-blue-400"></span>
+        </h2>
+        <div
+          id="modal-product-list"
+          class="space-y-2 mb-4 max-h-60 overflow-y-auto"
+        >
+          <!-- Products will be dynamically loaded here -->
         </div>
+        <div class="flex justify-end gap-2 mt-4">
+          <button
+            id="clear-product-selection"
+            class="bg-gray-700 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-all duration-200 ease-in-out shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-md"
+          >
+            Clear Selection
+          </button>
+          <button
+            id="close-product-modal-button"
+            class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-500 transition-all duration-200 ease-in-out shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-md"
+          >
+            Close
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Data Editing Form Container -->
-    <div id="data-editor-container" class="fixed inset-0 bg-gray-900 bg-opacity-90 z-50 p-6 overflow-auto transition-opacity duration-300 ease-in-out opacity-0 pointer-events-none">
-        <div class="max-w-4xl mx-auto bg-purple-900 bg-opacity-70 shadow-xl rounded-lg p-6 transition-transform duration-300 ease-in-out transform scale-95 text-purple-100">
-            <h2 class="text-3xl font-bold text-center text-purple-100 mb-6 drop-shadow-lg">Manage Application Data</h2>
+    <div
+      id="data-editor-container"
+      class="fixed inset-0 bg-gray-900 bg-opacity-90 z-50 p-6 overflow-auto transition-opacity duration-300 ease-in-out opacity-0 pointer-events-none"
+    >
+      <div
+        class="max-w-4xl mx-auto bg-purple-900 bg-opacity-70 shadow-xl rounded-lg p-6 transition-transform duration-300 ease-in-out transform scale-95 text-purple-100"
+      >
+        <h2
+          class="text-3xl font-bold text-center text-purple-100 mb-6 drop-shadow-lg"
+        >
+          Manage Application Data
+        </h2>
 
-            <div class="flex flex-col lg:flex-row gap-6">
-                <!-- Vendors Management -->
-                <div class="flex-1 bg-purple-800 p-4 rounded-lg shadow-sm">
-                    <h3 class="text-xl font-bold mb-4 text-purple-100">Vendors</h3>
-                    <input type="text" id="vendor-name-input" placeholder="Vendor Name" class="p-2 border border-purple-600 rounded-md w-full mb-2 focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all duration-200 ease-in-out bg-purple-700 text-purple-100">
-                    <div class="flex space-x-2 mb-4">
-                        <button id="add-vendor-button" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-500 transition-all duration-200 ease-in-out shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-md"><i class="fas fa-plus mr-2"></i>Add</button>
-                        <button id="edit-vendor-button" class="bg-yellow-600 text-white px-4 py-2 rounded-md hover:bg-yellow-500 transition-all duration-200 ease-in-out shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-md"><i class="fas fa-edit mr-2"></i>Edit</button>
-                        <button id="delete-vendor-button" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-500 transition-all duration-200 ease-in-out shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-md"><i class="fas fa-trash-alt mr-2"></i>Delete</button>
-                    </div>
-                    <div id="vendor-list" class="border border-purple-700 rounded-md max-h-48 overflow-y-auto"></div>
-                </div>
-
-                <!-- Products Management -->
-                <div class="flex-1 bg-purple-800 p-4 rounded-lg shadow-sm">
-                    <h3 class="text-xl font-bold mb-4 text-purple-100">Products</h3>
-                    <input type="text" id="product-name-input" placeholder="Product Name" class="p-2 border border-purple-600 rounded-md w-full mb-2 focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all duration-200 ease-in-out bg-purple-700 text-purple-100">
-                    <select id="product-vendor-select" class="p-2 border border-purple-600 rounded-md w-full mb-2 focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all duration-200 ease-in-out bg-purple-700 text-purple-100">
-                        <option value="">Select Vendor</option>
-                    </select>
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-purple-200 mb-1">Capabilities:</label>
-                        <div id="product-capabilities-checkboxes" class="grid grid-cols-2 gap-1 text-sm max-h-32 overflow-y-auto border p-2 rounded-md bg-purple-700 text-purple-100">
-                            <!-- Checkboxes for capabilities will be loaded here -->
-                        </div>
-                    </div>
-                    <div class="flex space-x-2 mb-4">
-                        <button id="add-product-button" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-500 transition-all duration-200 ease-in-out shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-md"><i class="fas fa-plus mr-2"></i>Add</button>
-                        <button id="edit-product-button" class="bg-yellow-600 text-white px-4 py-2 rounded-md hover:bg-yellow-500 transition-all duration-200 ease-in-out shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-md"><i class="fas fa-edit mr-2"></i>Edit</button>
-                        <button id="delete-product-button" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-500 transition-all duration-200 ease-in-out shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-md"><i class="fas fa-trash-alt mr-2"></i>Delete</button>
-                    </div>
-                    <div id="product-list" class="border border-purple-700 rounded-md max-h-48 overflow-y-auto"></div>
-                </div>
+        <div class="flex flex-col lg:flex-row gap-6">
+          <!-- Vendors Management -->
+          <div class="flex-1 bg-purple-800 p-4 rounded-lg shadow-sm">
+            <h3 class="text-xl font-bold mb-4 text-purple-100">Vendors</h3>
+            <input
+              type="text"
+              id="vendor-name-input"
+              placeholder="Vendor Name"
+              class="p-2 border border-purple-600 rounded-md w-full mb-2 focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all duration-200 ease-in-out bg-purple-700 text-purple-100"
+            />
+            <div class="flex space-x-2 mb-4">
+              <button
+                id="add-vendor-button"
+                class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-500 transition-all duration-200 ease-in-out shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-md"
+              >
+                <i class="fas fa-plus mr-2"></i>Add
+              </button>
+              <button
+                id="edit-vendor-button"
+                class="bg-yellow-600 text-white px-4 py-2 rounded-md hover:bg-yellow-500 transition-all duration-200 ease-in-out shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-md"
+              >
+                <i class="fas fa-edit mr-2"></i>Edit
+              </button>
+              <button
+                id="delete-vendor-button"
+                class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-500 transition-all duration-200 ease-in-out shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-md"
+              >
+                <i class="fas fa-trash-alt mr-2"></i>Delete
+              </button>
             </div>
+            <div
+              id="vendor-list"
+              class="border border-purple-700 rounded-md max-h-48 overflow-y-auto"
+            ></div>
+          </div>
 
-            <!-- Capabilities Management (Simplified as per plan, mainly for name/section) -->
-            <div class="bg-purple-800 p-4 rounded-lg shadow-sm mt-6">
-                <h3 class="text-xl font-bold mb-4 text-purple-100">Capabilities</h3>
-                <input type="text" id="capability-name-input" placeholder="Capability Display Name" class="p-2 border border-purple-600 rounded-md w-full mb-2 focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all duration-200 ease-in-out bg-purple-700 text-purple-100">
-                <select id="capability-section-select" class="p-2 border border-purple-600 rounded-md w-full mb-2 focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all duration-200 ease-in-out bg-purple-700 text-purple-100">
-                    <option value="infrastructure">Infrastructure</option>
-                    <option value="aiPlatform">AI Platform</option>
-                </select>
-                <div class="flex space-x-2 mb-4">
-                    <button id="add-capability-button" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-500 transition-all duration-200 ease-in-out shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-md"><i class="fas fa-plus mr-2"></i>Add</button>
-                    <button id="edit-capability-button" class="bg-yellow-600 text-white px-4 py-2 rounded-md hover:bg-yellow-500 transition-all duration-200 ease-in-out shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-md"><i class="fas fa-edit mr-2"></i>Edit</button>
-                    <button id="delete-capability-button" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-500 transition-all duration-200 ease-in-out shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-md"><i class="fas fa-trash-alt mr-2"></i>Delete</button>
-                </div>
-                <div id="capability-list" class="border border-purple-700 rounded-md max-h-48 overflow-y-auto"></div>
+          <!-- Products Management -->
+          <div class="flex-1 bg-purple-800 p-4 rounded-lg shadow-sm">
+            <h3 class="text-xl font-bold mb-4 text-purple-100">Products</h3>
+            <input
+              type="text"
+              id="product-name-input"
+              placeholder="Product Name"
+              class="p-2 border border-purple-600 rounded-md w-full mb-2 focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all duration-200 ease-in-out bg-purple-700 text-purple-100"
+            />
+            <select
+              id="product-vendor-select"
+              class="p-2 border border-purple-600 rounded-md w-full mb-2 focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all duration-200 ease-in-out bg-purple-700 text-purple-100"
+            >
+              <option value="">Select Vendor</option>
+            </select>
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-purple-200 mb-1"
+                >Capabilities:</label
+              >
+              <div
+                id="product-capabilities-checkboxes"
+                class="grid grid-cols-2 gap-1 text-sm max-h-32 overflow-y-auto border p-2 rounded-md bg-purple-700 text-purple-100"
+              >
+                <!-- Checkboxes for capabilities will be loaded here -->
+              </div>
             </div>
-
-            <div class="mt-6 flex justify-end">
-                <button id="save-close-data-editor" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-500 transition-all duration-200 ease-in-out shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-md">
-                    <i class="fas fa-save mr-2"></i>Save & Close
-                </button>
+            <div class="flex space-x-2 mb-4">
+              <button
+                id="add-product-button"
+                class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-500 transition-all duration-200 ease-in-out shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-md"
+              >
+                <i class="fas fa-plus mr-2"></i>Add
+              </button>
+              <button
+                id="edit-product-button"
+                class="bg-yellow-600 text-white px-4 py-2 rounded-md hover:bg-yellow-500 transition-all duration-200 ease-in-out shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-md"
+              >
+                <i class="fas fa-edit mr-2"></i>Edit
+              </button>
+              <button
+                id="delete-product-button"
+                class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-500 transition-all duration-200 ease-in-out shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-md"
+              >
+                <i class="fas fa-trash-alt mr-2"></i>Delete
+              </button>
             </div>
+            <div
+              id="product-list"
+              class="border border-purple-700 rounded-md max-h-48 overflow-y-auto"
+            ></div>
+          </div>
         </div>
+
+        <!-- Capabilities Management (Simplified as per plan, mainly for name/section) -->
+        <div class="bg-purple-800 p-4 rounded-lg shadow-sm mt-6">
+          <h3 class="text-xl font-bold mb-4 text-purple-100">Capabilities</h3>
+          <input
+            type="text"
+            id="capability-name-input"
+            placeholder="Capability Display Name"
+            class="p-2 border border-purple-600 rounded-md w-full mb-2 focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all duration-200 ease-in-out bg-purple-700 text-purple-100"
+          />
+          <select
+            id="capability-section-select"
+            class="p-2 border border-purple-600 rounded-md w-full mb-2 focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all duration-200 ease-in-out bg-purple-700 text-purple-100"
+          >
+            <option value="infrastructure">Infrastructure</option>
+            <option value="aiPlatform">AI Platform</option>
+          </select>
+          <div class="flex space-x-2 mb-4">
+            <button
+              id="add-capability-button"
+              class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-500 transition-all duration-200 ease-in-out shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-md"
+            >
+              <i class="fas fa-plus mr-2"></i>Add
+            </button>
+            <button
+              id="edit-capability-button"
+              class="bg-yellow-600 text-white px-4 py-2 rounded-md hover:bg-yellow-500 transition-all duration-200 ease-in-out shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-md"
+            >
+              <i class="fas fa-edit mr-2"></i>Edit
+            </button>
+            <button
+              id="delete-capability-button"
+              class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-500 transition-all duration-200 ease-in-out shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-md"
+            >
+              <i class="fas fa-trash-alt mr-2"></i>Delete
+            </button>
+          </div>
+          <div
+            id="capability-list"
+            class="border border-purple-700 rounded-md max-h-48 overflow-y-auto"
+          ></div>
+        </div>
+
+        <div class="mt-6 flex justify-end">
+          <button
+            id="save-close-data-editor"
+            class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-500 transition-all duration-200 ease-in-out shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-md"
+          >
+            <i class="fas fa-save mr-2"></i>Save & Close
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- JavaScript Modules -->
-    <script src="js/dataStore.js"></script>
-    <script src="js/csvHandler.js"></script>
-    <script src="js/uiRenderer.js"></script>
-    <script src="js/modals.js"></script>
-    <script src="js/dataEditor.js"></script>
-    <script src="js/chatbot.js"></script>
-    <script src="js/main.js"></script>
-</body>
+    <script type="module" src="js/dataStore.js"></script>
+    <script type="module" src="js/csvHandler.js"></script>
+    <script type="module" src="js/uiRenderer.js"></script>
+    <script type="module" src="js/modals.js"></script>
+    <script type="module" src="js/dataEditor.js"></script>
+    <script type="module" src="js/chatbot.js"></script>
+    <script type="module" src="js/main.js"></script>
+  </body>
 </html>
