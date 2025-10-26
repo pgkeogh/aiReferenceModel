@@ -1,38 +1,54 @@
-import { uiElements } from './dataStore.js';
+// js/chatbot.js
+
+// Import uiElements from main.js now
+import { uiElements } from "./main.js";
 
 /**
- * Appends a message to the chatbot display.
- * @param {string} message - The message content.
+ * Adds a chat message to the display.
  * @param {string} sender - 'user' or 'ai'.
+ * @param {string} message - The message content.
  */
-export function appendMessage(message, sender) {
-    const messageElement = document.createElement('div');
-    messageElement.className = `p-2 my-1 rounded-lg max-w-[80%] ${
-        sender === 'user' ? 'bg-blue-600 text-white ml-auto' : 'bg-purple-700 text-purple-100 mr-auto'
-    }`;
-    messageElement.textContent = message;
-    uiElements.chatMessages.appendChild(messageElement);
-    uiElements.chatMessages.scrollTop = uiElements.chatMessages.scrollHeight; // Scroll to bottom
+export function addChatMessage(sender, message) {
+  if (!uiElements.chatMessages) {
+    console.error("Chat messages container not found in uiElements.");
+    return;
+  }
+
+  const messageElement = document.createElement("div");
+  messageElement.className = `p-2 my-1 rounded-lg max-w-[80%] ${
+    sender === "user"
+      ? "bg-blue-600 text-white ml-auto"
+      : "bg-gray-700 text-purple-100 mr-auto"
+  }`;
+  messageElement.textContent = message;
+  uiElements.chatMessages.appendChild(messageElement);
+  uiElements.chatMessages.scrollTop = uiElements.chatMessages.scrollHeight; // Auto-scroll to bottom
 }
 
-/**
- * Handles sending a message from the user.
- */
-export async function sendMessage() {
-    const message = uiElements.chatInput.value.trim();
-    if (!message) return;
+// You can uncomment and use the functions below if you decide to activate the chatbot.
+// For now, they are just examples.
 
-    appendMessage(message, 'user');
-    uiElements.chatInput.value = '';
+/*
+// Example of how to use addChatMessage (if you activate the chatbot)
+document.addEventListener('DOMContentLoaded', () => {
+    if (uiElements.sendChatButton && uiElements.chatInput) {
+        uiElements.sendChatButton.addEventListener('click', () => {
+            const message = uiElements.chatInput.value.trim();
+            if (message) {
+                addChatMessage('user', message);
+                uiElements.chatInput.value = '';
+                // Simulate AI response
+                setTimeout(() => {
+                    addChatMessage('ai', `Thinking about "${message}"...`);
+                }, 500);
+            }
+        });
 
-    // Placeholder for AI response
-    appendMessage('Thinking...', 'ai');
-
-    // Simulate AI response after a delay
-    setTimeout(() => {
-        const aiResponse = `I received your message: "${message}". What else can I help you with?`;
-        uiElements.chatMessages.lastChild.textContent = aiResponse; // Update "Thinking..." message
-        uiElements.chatMessages.lastChild.classList.remove('italic', 'text-purple-300'); // Remove thinking styles
-        uiElements.chatMessages.scrollTop = uiElements.chatMessages.scrollHeight;
-    }, 1500);
-}
+        uiElements.chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                uiElements.sendChatButton.click();
+            }
+        });
+    }
+});
+*/

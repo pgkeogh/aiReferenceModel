@@ -1,322 +1,172 @@
+// js/csvHandler.js
+// Version: 2023-10-27_13 - Fixed vendor lookup to use vendor ID from products.csv
+
 import {
-  setVendors,
-  setProducts,
-  setCapabilities,
   vendors,
   products,
   capabilities,
+  setVendors,
+  setProducts,
+  setCapabilities,
+  generateUniqueId,
 } from "./dataStore.js";
 
-// Hardcoded default data (will be used if no data in localStorage)
-const defaultVendors = [
-  { id: "v1", name: "AWS" },
-  { id: "v2", name: "Azure" },
-  { id: "v3", name: "Google Cloud" },
-  { id: "v4", name: "Cloud Native" }, // For base services
-];
+const VENDORS_CSV_PATH = "data/vendors.csv";
+const PRODUCTS_CSV_PATH = "data/products.csv";
+const CAPABILITIES_CSV_PATH = "data/capabilities.csv";
 
-const defaultProducts = [
-  {
-    id: "p1",
-    name: "S3",
-    vendorId: "v1",
-    capabilityIds: ["dataLake", "storage"],
-  },
-  { id: "p2", name: "Redshift", vendorId: "v1", capabilityIds: ["dataLake"] },
-  {
-    id: "p3",
-    name: "Azure Data Lake Storage",
-    vendorId: "v2",
-    capabilityIds: ["dataLake", "storage"],
-  },
-  {
-    id: "p4",
-    name: "Synapse Analytics",
-    vendorId: "v2",
-    capabilityIds: ["dataLake"],
-  },
-  {
-    id: "p5",
-    name: "Google Cloud Storage",
-    vendorId: "v3",
-    capabilityIds: ["dataLake", "storage"],
-  },
-  { id: "p6", name: "BigQuery", vendorId: "v3", capabilityIds: ["dataLake"] },
-  {
-    id: "p7",
-    name: "Cloud Native Base Services",
-    vendorId: "v4",
-    capabilityIds: [
-      "dataLake",
-      "virtualisation",
-      "vectorDB",
-      "storage",
-      "aiOnboarding",
-      "aiTesting",
-      "aiIntegrations",
-      "webUIs",
-      "developerEcosystem",
-      "aiCompliance",
-      "aiGovernance",
-      "aiMonitoring",
-      "aiGateway",
-      "aiSecurity",
-      "modelManagementCustomization",
-      "agenticEngines",
-      "aiDeployment",
-      "aiHostingScalability",
-    ],
-  },
-  {
-    id: "p8",
-    name: "Databricks on AWS",
-    vendorId: "v1",
-    capabilityIds: [
-      "dataLake",
-      "virtualisation",
-      "aiOnboarding",
-      "modelManagementCustomization",
-    ],
-  },
-  {
-    id: "p9",
-    name: "Snowflake on Azure",
-    vendorId: "v2",
-    capabilityIds: ["dataLake", "virtualisation"],
-  },
-  {
-    id: "p10",
-    name: "OpenAI GPT-4",
-    vendorId: "v5",
-    capabilityIds: [
-      "aiOnboarding",
-      "modelManagementCustomization",
-      "agenticEngines",
-    ],
-  }, // Assuming v5 for OpenAI
-  {
-    id: "p11",
-    name: "Hugging Face Transformers",
-    vendorId: "v6",
-    capabilityIds: ["aiOnboarding", "modelManagementCustomization"],
-  }, // Assuming v6 for Hugging Face
-  {
-    id: "p12",
-    name: "Kubernetes (EKS)",
-    vendorId: "v1",
-    capabilityIds: ["aiDeployment", "aiHostingScalability"],
-  },
-  {
-    id: "p13",
-    name: "Azure Kubernetes Service (AKS)",
-    vendorId: "v2",
-    capabilityIds: ["aiDeployment", "aiHostingScalability"],
-  },
-  {
-    id: "p14",
-    name: "Vertex AI",
-    vendorId: "v3",
-    capabilityIds: [
-      "aiOnboarding",
-      "aiTesting",
-      "aiIntegrations",
-      "modelManagementCustomization",
-      "aiDeployment",
-      "aiHostingScalability",
-    ],
-  },
-  {
-    id: "p15",
-    name: "Azure Machine Learning",
-    vendorId: "v2",
-    capabilityIds: [
-      "aiOnboarding",
-      "aiTesting",
-      "aiIntegrations",
-      "modelManagementCustomization",
-      "aiDeployment",
-      "aiHostingScalability",
-    ],
-  },
-  {
-    id: "p16",
-    name: "AWS SageMaker",
-    vendorId: "v1",
-    capabilityIds: [
-      "aiOnboarding",
-      "aiTesting",
-      "aiIntegrations",
-      "modelManagementCustomization",
-      "aiDeployment",
-      "aiHostingScalability",
-    ],
-  },
-  {
-    id: "p17",
-    name: "MongoDB Atlas",
-    vendorId: "v7",
-    capabilityIds: ["vectorDB", "storage"],
-  }, // Assuming v7 for MongoDB
-  { id: "p18", name: "Pinecone", vendorId: "v8", capabilityIds: ["vectorDB"] }, // Assuming v8 for Pinecone
-];
+const LOCAL_STORAGE_KEY = "aiPlatformData";
 
-const defaultCapabilities = [
-  // Infrastructure/Data Layer
-  {
-    id: "dataLake",
-    name: "Data Lake",
-    section: "infrastructure",
-    currentProductId: null,
-  },
-  {
-    id: "virtualisation",
-    name: "Virtualisation",
-    section: "infrastructure",
-    currentProductId: null,
-  },
-  {
-    id: "vectorDB",
-    name: "Vector DB",
-    section: "infrastructure",
-    currentProductId: null,
-  },
-  {
-    id: "storage",
-    name: "Storage",
-    section: "infrastructure",
-    currentProductId: null,
-  },
-
-  // AI Platform Capabilities
-  {
-    id: "aiOnboarding",
-    name: "AI Onboarding",
-    section: "aiPlatform",
-    currentProductId: null,
-  },
-  {
-    id: "aiTesting",
-    name: "AI Testing",
-    section: "aiPlatform",
-    currentProductId: null,
-  },
-  {
-    id: "aiIntegrations",
-    name: "AI Integrations",
-    section: "aiPlatform",
-    currentProductId: null,
-  },
-  {
-    id: "webUIs",
-    name: "WebUIs",
-    section: "aiPlatform",
-    currentProductId: null,
-  },
-  {
-    id: "developerEcosystem",
-    name: "Developer Ecosystem",
-    section: "aiPlatform",
-    currentProductId: null,
-  },
-  {
-    id: "aiCompliance",
-    name: "AI Compliance",
-    section: "aiPlatform",
-    currentProductId: null,
-  },
-  {
-    id: "aiGovernance",
-    name: "AI Governance",
-    section: "aiPlatform",
-    currentProductId: null,
-  },
-  {
-    id: "aiMonitoring",
-    name: "AI Monitoring",
-    section: "aiPlatform",
-    currentProductId: null,
-  },
-  {
-    id: "aiGateway",
-    name: "AI Gateway",
-    section: "aiPlatform",
-    currentProductId: null,
-  },
-  {
-    id: "aiSecurity",
-    name: "AI Security",
-    section: "aiPlatform",
-    currentProductId: null,
-  },
-  {
-    id: "modelManagementCustomization",
-    name: "Model Management + Customization",
-    section: "aiPlatform",
-    currentProductId: null,
-  },
-  {
-    id: "agenticEngines",
-    name: "Agentic Engines",
-    section: "aiPlatform",
-    currentProductId: null,
-  },
-  {
-    id: "aiDeployment",
-    name: "AI Deployment",
-    section: "aiPlatform",
-    currentProductId: null,
-  },
-  {
-    id: "aiHostingScalability",
-    name: "AI Hosting + Scalability",
-    section: "aiPlatform",
-    currentProductId: null,
-  },
-];
-
-/**
- * Loads application data from localStorage, or falls back to default data if not found.
- */
-export async function loadData() {
-  try {
-    const storedData = localStorage.getItem("appData");
-    if (storedData) {
-      const parsedData = JSON.parse(storedData);
-      setVendors(parsedData.vendors || defaultVendors);
-      setProducts(parsedData.products || defaultProducts);
-      setCapabilities(parsedData.capabilities || defaultCapabilities);
-      console.log("Data loaded from localStorage.");
-      return; // Exit if data was loaded from localStorage
+async function parseCsv(url) {
+  return new Promise((resolve, reject) => {
+    if (typeof Papa === "undefined") {
+      console.error(
+        "PapaParse is not loaded. Please ensure its CDN script is in index.html."
+      );
+      return reject(new Error("PapaParse not found."));
     }
-  } catch (error) {
-    console.error(
-      "Error loading or parsing data from localStorage, falling back to defaults:",
-      error
-    );
-    // Fall through to load defaults if localStorage data is corrupted
-  }
 
-  // If no data in localStorage or an error occurred, load defaults
-  setVendors(defaultVendors);
-  setProducts(defaultProducts);
-  setCapabilities(defaultCapabilities);
-  console.log("Default data loaded.");
+    Papa.parse(url, {
+      download: true,
+      header: true,
+      skipEmptyLines: true,
+      complete: (results) => {
+        resolve(results.data);
+      },
+      error: (error) => {
+        reject(error);
+      },
+    });
+  });
 }
 
-/**
- * Saves the current application data (vendors, products, capabilities) to localStorage.
- */
-export function saveData() {
+export function saveDataToLocalStorage() {
   try {
     const dataToSave = {
       vendors: vendors,
       products: products,
       capabilities: capabilities,
     };
-    localStorage.setItem("appData", JSON.stringify(dataToSave));
-    console.log("Data saved to localStorage.");
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dataToSave));
+    console.log("CSV_HANDLER: Data saved to Local Storage.");
+  } catch (e) {
+    console.error("CSV_HANDLER: Error saving data to Local Storage:", e);
+  }
+}
+
+function loadDataFromLocalStorage() {
+  try {
+    const storedData = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (storedData) {
+      const parsedData = JSON.parse(storedData);
+      setVendors(parsedData.vendors || []);
+      setProducts(parsedData.products || []);
+
+      setCapabilities(parsedData.capabilities || []);
+
+      console.log("CSV_HANDLER: Data loaded from Local Storage.");
+      console.log("CSV_HANDLER: Vendors from LS:", vendors);
+      console.log("CSV_HANDLER: Capabilities from LS (merged):", capabilities);
+      console.log("CSV_HANDLER: Products from LS:", products);
+      return true;
+    }
+  } catch (e) {
+    console.error("CSV_HANDLER: Error loading data from Local Storage:", e);
+  }
+  return false;
+}
+
+export async function loadData() {
+  if (loadDataFromLocalStorage()) {
+    return;
+  }
+
+  console.log(
+    "CSV_HANDLER: Local Storage empty or failed. Loading from CSV files..."
+  );
+  try {
+    const [csvVendors, csvProducts, csvCapabilities] = await Promise.all([
+      parseCsv(VENDORS_CSV_PATH),
+      parseCsv(PRODUCTS_CSV_PATH),
+      parseCsv(CAPABILITIES_CSV_PATH),
+    ]);
+
+    // Process Vendors
+    const parsedVendors = csvVendors.map((row) => ({
+      id: row.id || generateUniqueId(),
+      name: row.name || row.Vendor,
+    }));
+    setVendors(parsedVendors);
+    console.log("CSV_HANDLER: Parsed Vendors from CSV:", vendors);
+
+    // Process Capabilities
+    const parsedCapabilitiesFromCsv = csvCapabilities.map((row) => ({
+      id:
+        row.id ||
+        `cap_${(row.name || row.Capability).toLowerCase().replace(/\s/g, "_")}`,
+      name: row.name || row.Capability,
+    }));
+    setCapabilities(parsedCapabilitiesFromCsv);
+    console.log(
+      "CSV_HANDLER: Parsed Capabilities from CSV (merged with hardcoded):",
+      capabilities
+    );
+
+    // Process Products
+    const parsedProducts = csvProducts.map((row) => {
+      // --- CRITICAL FIX: Match row.Vendor (which is the ID) against v.id ---
+      const vendor = parsedVendors.find(
+        (v) =>
+          v.id.toLowerCase().trim() === (row.Vendor || "").toLowerCase().trim()
+      );
+
+      const capabilityIdsFromCsv = row.Capability
+        ? row.Capability.split(",").map((name) => name.trim())
+        : [];
+      const mappedCapabilityIds = capabilityIdsFromCsv
+        .map((capIdFromCsv) => {
+          const capability = capabilities.find(
+            (c) => c.id.toLowerCase() === capIdFromCsv.toLowerCase()
+          );
+          if (!capability) {
+            console.warn(
+              `CSV_HANDLER: No matching capability found for ID: "${capIdFromCsv}" in product "${
+                row.name || row.Product
+              }"`
+            );
+          }
+          return capability ? capability.id : null;
+        })
+        .filter((id) => id !== null);
+
+      const newProduct = {
+        id: row.id || generateUniqueId(),
+        name: row.name || row.Product,
+        vendorId: vendor ? vendor.id : null, // Now vendor.id will be correctly assigned
+        capabilityIds: mappedCapabilityIds,
+      };
+
+      console.log(
+        `CSV_HANDLER: Processing product: "${newProduct.name}" (Row Vendor: "${
+          row.Vendor || "N/A"
+        }", Row Capability: "${
+          row.Capability || "N/A"
+        }") -> Mapped Vendor ID: ${
+          newProduct.vendorId
+        }, Mapped Capability IDs:`,
+        newProduct.capabilityIds
+      );
+      return newProduct;
+    });
+    setProducts(parsedProducts);
+    console.log("CSV_HANDLER: Parsed Products from CSV:", products);
+
+    console.log("CSV_HANDLER: Data loaded successfully from CSV files.");
+    saveDataToLocalStorage();
   } catch (error) {
-    console.error("Error saving data to localStorage:", error);
-    alert("Failed to save data. Please check your browser's storage settings.");
+    console.error("CSV_HANDLER: Error loading or parsing CSV data:", error);
+    alert(
+      "Failed to load initial data. Please ensure 'data/vendors.csv', 'data/products.csv', and 'data/capabilities.csv' exist and are correctly formatted."
+    );
   }
 }

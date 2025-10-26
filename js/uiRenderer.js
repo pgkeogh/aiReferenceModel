@@ -1,22 +1,167 @@
-import {
-  vendors,
-  products,
-  capabilities,
-  uiElements,
-  selectedVendorId,
-  selectedProductId,
-  selectedCapabilityId,
-  setSelectedVendorId,
-  setSelectedProductId,
-  setSelectedCapabilityId,
-} from "./dataStore.js";
-import { handleVendorSelection } from "./main.js"; // Import for re-rendering after data changes
-import { openProductSelectionModal } from "./modals.js"; // Import for capability box click
+// js/uiRenderer.js
+// Version: 2023-10-27_14 - Added detailed rendering logs
+
+import { uiElements } from "./main.js";
+import { capabilities, products, vendors } from "./dataStore.js";
+import { openProductSelectionModal } from "./modals.js";
 
 /**
- * Renders the vendor selection dropdown.
+ * Renders all capability boxes into their respective containers (Data Layer, AI Layer)
+ * based on their 'category', 'section', and 'order' properties.
  */
+export function renderAllCapabilityBoxes() {
+  const dataContainer = uiElements.infrastructureDataCapabilitiesContainer;
+  const aiContainer = uiElements.aiPlatformCapabilitiesContainer;
+
+  if (!dataContainer || !aiContainer) {
+    console.error(
+      "UI_RENDERER: One or more capability containers not found in uiElements. Check main.js and index.html."
+    );
+    return;
+  }
+
+  dataContainer.innerHTML = "";
+  aiContainer.innerHTML = "";
+
+  const dataLayerCaps = capabilities.filter((c) => c.category === "Data Layer");
+  const aiLayerCaps = capabilities.filter((c) => c.category === "AI Layer");
+
+  console.log(
+    "UI_RENDERER: Rendering Data Layer Capabilities:",
+    dataLayerCaps.map((c) => c.name)
+  );
+  if (dataContainer) {
+    dataLayerCaps
+      .sort((a, b) => a.order - b.order)
+      .forEach((capability) => {
+        const capabilityBox = createCapabilityBox(capability);
+        dataContainer.appendChild(capabilityBox);
+      });
+  }
+
+  console.log(
+    "UI_RENDERER: Rendering AI Layer Capabilities:",
+    aiLayerCaps.map((c) => c.name)
+  );
+  if (aiContainer) {
+    const aiSections = {};
+    aiLayerCaps.forEach((cap) => {
+      if (!aiSections[cap.section]) {
+        aiSections[cap.section] = [];
+      }
+      aiSections[cap.section].push(cap);
+    });
+
+    const sectionOrder = [
+      "AI Layer - Top",
+      "AI Layer - UI",
+      "AI Layer - Governance",
+      "AI Layer - Operations",
+      "AI Layer - Standards",
+      "AI Layer - Models",
+      "AI Layer - Deployment",
+    ];
+
+    sectionOrder.forEach((sectionName) => {
+      const sectionCaps = aiSections[sectionName];
+      if (sectionCaps && sectionCaps.length > 0) {
+        if (sectionCaps[0].isLabel) {
+          const labelDiv = document.createElement("div");
+          labelDiv.className = `p-2 rounded-md text-center text-purple-200 font-semibold text-lg py-3
+                                         ${
+                                           sectionCaps[0].borderColorClass ||
+                                           "border-purple-700"
+                                         } border-2 bg-purple-800 shadow-md mb-4`;
+          labelDiv.textContent = sectionCaps[0].name;
+          aiContainer.appendChild(labelDiv);
+          console.log(
+            `UI_RENDERER: Appended label: "${sectionCaps[0].name}" to AI container.`
+          );
+        } else {
+          const rowDiv = document.createElement("div");
+          rowDiv.className = "flex flex-wrap gap-4 mb-4";
+
+          sectionCaps
+            .sort((a, b) => a.order - b.order)
+            .forEach((capability) => {
+              const capabilityBox = createCapabilityBox(capability);
+              rowDiv.appendChild(capabilityBox);
+              console.log(
+                `UI_RENDERER: Appended capability box for "${capability.name}" to AI section "${sectionName}".`
+              );
+            });
+          aiContainer.appendChild(rowDiv);
+        }
+      }
+    });
+  }
+}
+
+function createCapabilityBox(capability) {
+  const box = document.createElement("div");
+  box.className = `flex-1 flex flex-col justify-between p-4 rounded-lg shadow-md min-h-[100px] cursor-pointer
+                     transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-1
+                     ${
+                       capability.borderColorClass || "border-purple-700"
+                     } border-2 bg-purple-800 text-purple-100`;
+  box.dataset.capabilityId = capability.id;
+
+  const capabilityName = document.createElement("h3");
+  capabilityName.className = "font-semibold text-lg mb-2";
+  capabilityName.textContent = capability.name;
+  box.appendChild(capabilityName);
+
+  const productName = document.createElement("p");
+  productName.className = "text-sm text-purple-300 italic";
+  productName.id = `product-name-${capability.id}`;
+  box.appendChild(productName);
+
+  box.addEventListener("click", () => openProductSelectionModal(capability.id));
+
+  console.log(
+    `UI_RENDERER: Created capability box for "${capability.name}" with product name ID "${productName.id}"`
+  );
+  return box;
+}
+
+export function updateCapabilityBoxProductDisplay() {
+  console.log("UI_RENDERER: Starting updateCapabilityBoxProductDisplay...");
+  capabilities.forEach((capability) => {
+    const productNameElement = document.getElementById(
+      `product-name-${capability.id}`
+    );
+    if (productNameElement) {
+      if (capability.currentProductId) {
+        const product = products.find(
+          (p) => p.id === capability.currentProductId
+        );
+        const displayText = product
+          ? `Product: ${product.name}`
+          : "No Product Assigned (Product not found)";
+        productNameElement.textContent = displayText;
+        console.log(
+          `UI_RENDERER: Updated capability "${capability.name}" (${capability.id}) with product text: "${displayText}"`
+        );
+      } else {
+        productNameElement.textContent = "No Product Assigned";
+        console.log(
+          `UI_RENDERER: Updated capability "${capability.name}" (${capability.id}) with text: "No Product Assigned"`
+        );
+      }
+    } else {
+      console.warn(
+        `UI_RENDERER: Could not find product name element for capability ID: ${capability.id}`
+      );
+    }
+  });
+  console.log("UI_RENDERER: Finished updateCapabilityBoxProductDisplay.");
+}
+
 export function renderVendorSelector() {
+  if (!uiElements.vendorSelectElement) {
+    console.error("UI_RENDERER: Vendor select element not found.");
+    return;
+  }
   uiElements.vendorSelectElement.innerHTML =
     '<option value="">No Vendor Selected</option>';
   vendors.forEach((vendor) => {
@@ -25,265 +170,95 @@ export function renderVendorSelector() {
     option.textContent = vendor.name;
     uiElements.vendorSelectElement.appendChild(option);
   });
-  // Reset selection to default (or set to first vendor if desired)
-  uiElements.vendorSelectElement.value = "";
+  console.log("UI_RENDERER: Vendor selector rendered.");
 }
 
-/**
- * Updates the display of product names within capability boxes that are already rendered.
- * This function does NOT create the capability boxes.
- */
-export function updateCapabilityBoxProductDisplay() {
-  capabilities.forEach((capability) => {
-    const capabilityBox = document.querySelector(
-      `[data-capability-id="${capability.id}"]`
+export function renderVendorEditor() {
+  const vendorListDiv = uiElements.vendorList;
+  if (!vendorListDiv) {
+    console.error(
+      "UI_RENDERER: Vendor list container not found in data editor."
     );
-    if (capabilityBox) {
-      const productNameDisplay = capabilityBox.querySelector(
-        "[data-product-display]"
-      );
-      if (productNameDisplay) {
-        const product = products.find(
-          (p) => p.id === capability.currentProductId
-        );
-        productNameDisplay.textContent = product ? product.name : "N/A";
-      }
-    }
-  });
-}
-
-/**
- * Dynamically renders ALL capability boxes into their respective containers.
- * This function CLEARS existing boxes and recreates them.
- */
-export function renderAllCapabilityBoxes() {
-  // Clear existing content in both containers
-  uiElements.infrastructureDataCapabilitiesContainer.innerHTML = "";
-  uiElements.aiPlatformCapabilitiesContainer.innerHTML = "";
-
-  capabilities.forEach((capability) => {
-    const capabilityBox = document.createElement("div");
-    capabilityBox.id = capability.id; // Assign ID
-    capabilityBox.dataset.capabilityId = capability.id; // Assign data attribute
-
-    // Determine styling based on section
-    let bgColor = "";
-    let borderColor = "";
-    let textColor = "";
-
-    if (capability.section === "infrastructure") {
-      bgColor = "bg-purple-800";
-      borderColor = "border-purple-500";
-      textColor = "text-purple-200";
-    } else if (capability.section === "aiPlatform") {
-      bgColor = "bg-blue-800";
-      borderColor = "border-blue-500";
-      textColor = "text-blue-200";
-    }
-
-    capabilityBox.className = `flex flex-col justify-center items-center p-2 rounded-lg text-center cursor-pointer transition-all duration-200 ease-in-out min-h-[60px] shadow-md hover:shadow-lg hover:-translate-y-1 active:translate-y-0 active:shadow-md transform ${bgColor} border-2 ${borderColor} ${textColor} hover:${bgColor.replace(
-      "800",
-      "700"
-    )}`;
-
-    capabilityBox.innerHTML = `
-            <span class="font-semibold">${capability.name}</span>
-            <span class="text-sm font-semibold mt-1" data-product-display></span>
-        `;
-
-    // Append to the correct container
-    if (capability.section === "infrastructure") {
-      uiElements.infrastructureDataCapabilitiesContainer.appendChild(
-        capabilityBox
-      );
-    } else if (capability.section === "aiPlatform") {
-      // For AI Platform, we are appending directly. If you need specific grid rows/columns
-      // for dynamically added capabilities, you would need to group them here
-      // before appending to create the grid structure.
-      uiElements.aiPlatformCapabilitiesContainer.appendChild(capabilityBox);
-    }
-  });
-
-  // After rendering all boxes, update their product displays and attach listeners
-  updateCapabilityBoxProductDisplay();
-  attachCapabilityBoxListeners();
-}
-
-/**
- * Attaches event listeners to all capability boxes for modal interaction.
- * This should be called once after initial rendering and whenever capabilities might change.
- */
-export function attachCapabilityBoxListeners() {
-  document.querySelectorAll("[data-capability-id]").forEach((box) => {
-    // Remove existing listener to prevent duplicates before adding a new one
-    box.removeEventListener("click", handleCapabilityBoxClick);
-    box.addEventListener("click", handleCapabilityBoxClick);
-  });
-}
-
-function handleCapabilityBoxClick(e) {
-  const box = e.currentTarget;
-  // This check might be less critical now that boxes are dynamically rendered
-  // but keep it as a safeguard if any header-like elements get data-capability-id accidentally.
-  if (
-    box.classList.contains("bg-purple-700") ||
-    box.classList.contains("bg-blue-700")
-  ) {
-    // Removed bg-purple-800 as that is a capability box color
     return;
   }
-  const capabilityId = box.dataset.capabilityId;
-  openProductSelectionModal(capabilityId);
-}
-
-/**
- * Renders the vendor list in the data editor.
- */
-export function renderVendorEditor() {
-  uiElements.vendorNameInput.value = "";
-  setSelectedVendorId(null);
-  uiElements.vendorList.innerHTML = "";
+  vendorListDiv.innerHTML = "";
   vendors.forEach((vendor) => {
-    const vendorItem = document.createElement("div");
-    vendorItem.className =
-      "flex justify-between items-center p-2 border-b border-purple-700 hover:bg-purple-700 cursor-pointer transition-colors duration-150";
-    vendorItem.textContent = vendor.name;
-    vendorItem.dataset.id = vendor.id;
-    vendorItem.addEventListener("click", () => {
-      setSelectedVendorId(vendor.id);
-      uiElements.vendorNameInput.value = vendor.name;
-      Array.from(uiElements.vendorList.children).forEach((item) =>
-        item.classList.remove("bg-purple-600", "border-purple-400")
-      );
-      vendorItem.classList.add("bg-purple-600", "border-purple-400");
-    });
-    const deleteBtn = document.createElement("button");
-    deleteBtn.className =
-      "bg-red-600 text-white px-3 py-1 rounded-md text-sm hover:bg-red-500 transition-colors duration-200";
-    deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
-    deleteBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      // Call deleteVendor from dataEditor.js
-      import("./dataEditor.js").then((module) =>
-        module.deleteVendor(vendor.id)
-      );
-    });
-    vendorItem.appendChild(deleteBtn);
-    uiElements.vendorList.appendChild(vendorItem);
+    const item = document.createElement("div");
+    item.className =
+      "p-2 border-b border-purple-700 hover:bg-purple-700 cursor-pointer";
+    item.textContent = vendor.name;
+    item.dataset.vendorId = vendor.id;
+    vendorListDiv.appendChild(item);
   });
+  const productVendorSelect = uiElements.productVendorSelect;
+  if (productVendorSelect) {
+    productVendorSelect.innerHTML = '<option value="">Select Vendor</option>';
+    vendors.forEach((vendor) => {
+      const option = document.createElement("option");
+      option.value = vendor.id;
+      option.textContent = vendor.name;
+      productVendorSelect.appendChild(option);
+    });
+  }
+  console.log("UI_RENDERER: Vendor editor rendered.");
 }
 
-/**
- * Renders the product list and related controls in the data editor.
- */
 export function renderProductEditor() {
-  uiElements.productNameInput.value = "";
-  uiElements.productVendorSelect.innerHTML =
-    '<option value="">Select Vendor</option>';
-  vendors.forEach((vendor) => {
-    const option = document.createElement("option");
-    option.value = vendor.id;
-    option.textContent = vendor.name;
-    uiElements.productVendorSelect.appendChild(option);
-  });
-  uiElements.productVendorSelect.value = "";
-
-  uiElements.productCapabilitiesCheckboxes.innerHTML = "";
-  capabilities.forEach((capability) => {
-    const div = document.createElement("div");
-    div.className = "flex items-center space-x-1";
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.id = `product-cap-${capability.id}`;
-    checkbox.value = capability.id;
-    checkbox.className = "form-checkbox h-4 w-4 text-blue-400 rounded";
-    const label = document.createElement("label");
-    label.htmlFor = `product-cap-${capability.id}`;
-    label.textContent = capability.name;
-    label.className = "ml-1 text-purple-200";
-    div.appendChild(checkbox);
-    div.appendChild(label);
-    uiElements.productCapabilitiesCheckboxes.appendChild(div);
-  });
-
-  setSelectedProductId(null);
-  uiElements.productList.innerHTML = "";
+  const productListDiv = uiElements.productList;
+  if (!productListDiv) {
+    console.error(
+      "UI_RENDERER: Product list container not found in data editor."
+    );
+    return;
+  }
+  productListDiv.innerHTML = "";
   products.forEach((product) => {
-    const productItem = document.createElement("div");
-    productItem.className =
-      "flex justify-between items-center p-2 border-b border-purple-700 hover:bg-purple-700 cursor-pointer transition-colors duration-150";
+    const item = document.createElement("div");
+    item.className =
+      "p-2 border-b border-purple-700 hover:bg-purple-700 cursor-pointer";
     const vendor = vendors.find((v) => v.id === product.vendorId);
-    productItem.innerHTML = `<span>${product.name} (${
-      vendor ? vendor.name : "N/A"
-    })</span>`;
-    productItem.dataset.id = product.id;
-    productItem.addEventListener("click", () => {
-      setSelectedProductId(product.id);
-      uiElements.productNameInput.value = product.name;
-      uiElements.productVendorSelect.value = product.vendorId || "";
-      Array.from(
-        uiElements.productCapabilitiesCheckboxes.querySelectorAll(
-          'input[type="checkbox"]'
-        )
-      ).forEach((cb) => {
-        cb.checked = product.capabilityIds.includes(cb.value);
-      });
-      Array.from(uiElements.productList.children).forEach((item) =>
-        item.classList.remove("bg-purple-600", "border-purple-400")
-      );
-      productItem.classList.add("bg-purple-600", "border-purple-400");
-    });
-    const deleteBtn = document.createElement("button");
-    deleteBtn.className =
-      "bg-red-600 text-white px-3 py-1 rounded-md text-sm hover:bg-red-500 transition-colors duration-200";
-    deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
-    deleteBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      // Call deleteProduct from dataEditor.js
-      import("./dataEditor.js").then((module) =>
-        module.deleteProduct(product.id)
-      );
-    });
-    productItem.appendChild(deleteBtn);
-    uiElements.productList.appendChild(productItem);
+    item.textContent = `${product.name} (${vendor ? vendor.name : "N/A"})`;
+    item.dataset.productId = product.id;
+    productListDiv.appendChild(item);
   });
+
+  const productCapabilitiesCheckboxes =
+    uiElements.productCapabilitiesCheckboxes;
+  if (productCapabilitiesCheckboxes) {
+    productCapabilitiesCheckboxes.innerHTML = "";
+    capabilities.forEach((cap) => {
+      if (!cap.isLabel) {
+        const label = document.createElement("label");
+        label.className = "flex items-center space-x-2 text-purple-200";
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.value = cap.id;
+        checkbox.className = "form-checkbox text-blue-600 rounded";
+        label.appendChild(checkbox);
+        label.append(cap.name);
+        productCapabilitiesCheckboxes.appendChild(label);
+      }
+    });
+  }
+  console.log("UI_RENDERER: Product editor rendered.");
 }
 
-/**
- * Renders the capability list in the data editor.
- */
 export function renderCapabilityEditor() {
-  uiElements.capabilityNameInput.value = "";
-  uiElements.capabilitySectionSelect.value = "infrastructure"; // Default
-  setSelectedCapabilityId(null);
-  uiElements.capabilityList.innerHTML = "";
+  const capabilityListDiv = uiElements.capabilityList;
+  if (!capabilityListDiv) {
+    console.error(
+      "UI_RENDERER: Capability list container not found in data editor."
+    );
+    return;
+  }
+  capabilityListDiv.innerHTML = "";
   capabilities.forEach((capability) => {
-    const capabilityItem = document.createElement("div");
-    capabilityItem.className =
-      "flex justify-between items-center p-2 border-b border-purple-700 hover:bg-purple-700 cursor-pointer transition-colors duration-150";
-    capabilityItem.textContent = `${capability.name} (${capability.section})`;
-    capabilityItem.dataset.id = capability.id;
-    capabilityItem.addEventListener("click", () => {
-      setSelectedCapabilityId(capability.id);
-      uiElements.capabilityNameInput.value = capability.name;
-      uiElements.capabilitySectionSelect.value = capability.section;
-      Array.from(uiElements.capabilityList.children).forEach((item) =>
-        item.classList.remove("bg-purple-600", "border-purple-400")
-      );
-      capabilityItem.classList.add("bg-purple-600", "border-purple-400");
-    });
-    const deleteBtn = document.createElement("button");
-    deleteBtn.className =
-      "bg-red-600 text-white px-3 py-1 rounded-md text-sm hover:bg-red-500 transition-colors duration-200";
-    deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
-    deleteBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      // Call deleteCapability from dataEditor.js
-      import("./dataEditor.js").then((module) =>
-        module.deleteCapability(capability.id)
-      );
-    });
-    capabilityItem.appendChild(deleteBtn);
-    uiElements.capabilityList.appendChild(capabilityItem);
+    const item = document.createElement("div");
+    item.className =
+      "p-2 border-b border-purple-700 hover:bg-purple-700 cursor-pointer";
+    item.textContent = `${capability.name} (${capability.category})`;
+    item.dataset.capabilityId = capability.id;
+    capabilityListDiv.appendChild(item);
   });
+  console.log("UI_RENDERER: Capability editor rendered.");
 }

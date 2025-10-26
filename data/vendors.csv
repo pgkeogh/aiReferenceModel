@@ -3,6 +3,11 @@ v1,AWS
 v2,Microsoft
 v3,Google
 v4,IBM
-v5,Pinecone
-v6,Weaviate
-v_cn,Cloud Native
+v5,DXC
+v6,Databricks
+v7,Informatica
+v8,Salesforce
+v9,UIPath
+v10,Boomi
+v11,Denodo
+v12,CloudNative
