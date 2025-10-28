@@ -1,21 +1,87 @@
-id,name,Vendor,Capability
-p1,Amazon S3,v1,cap_storage
-p2,Azure AI Foundry,v2,"cap_ai_compliance,cap_ai_governance,cap_ai_monitoring,cap_ai_gateway,cap_ai_security,cap_model_management_customization,cap_foundation_models"
-p3,Google Vertex,v3,"cap_ai_compliance,cap_ai_governance,cap_ai_monitoring,cap_ai_gateway,cap_ai_security,cap_model_management_customization,cap_foundation_models"
-p4,IBM Watsonx.ai,v4,"cap_ai_gateway,cap_ai_security,cap_model_management_customization,cap_foundation_models"
-p5,IBM Watsonx.data,v4,"cap_data_lake,cap_data_governance"
-p6,IBM Watsonx.governance,v4,"cap_ai_compliance,cap_ai_governance,cap_ai_monitoring"
-p7,AWS Bedrock,v1,"cap_ai_gateway,cap_model_management_customization,cap_foundation_models"
-p8,Amazon SageMaker,v1,"cap_ai_compliance,cap_ai_governance,cap_model_management_customization,"
-p9,Azure Data Lake Storage,v2,cap_data_lake
-p8,Google Cloud Storage,v3,cap_data_lake
-p9,Amazon EKS,v1,cap_ai_deployment
-p10,Azure Kubernetes Service,v2,cap_ai_deployment
-p11,Google Kubernetes Engine,v3,cap_ai_deployment
-p12,DXC AIW,v5,"cap_web_uis,cap_developer_ecosystem"
-p13,DXC AI Engineering,v5,"cap_ai_onboarding,cap_ai_testing,cap_ai_integrations"
-p14,Azure Blob Storage,v2,cap_storage
-p15,LiteLLM,v5,cap_ai_gateway
-p16,Langfuse,v5,cap_ai_monitoring
-p17,MLFLow,v5,"cap_ai_compliance,cap_ai_governance,cap_ai_security"
-p18,Cloud Native Base Services,v12,"cap_ai_gateway,cap_ai_monitoring,cap_ai_compliance,cap_ai_governance,cap_ai_security,cap_ai_deployment"
+id,name,vendorId,capabilityIds
+p1,AWS Lake Formation,v1,cap_data_lake
+p2,Azure Data Lake Storage (ADLS) Gen2,v2,cap_data_lake
+p3,BigLake,v3,cap_data_lake
+p4,IBM InfoSphere MDM,v4,cap_data_lake
+p5,Databricks Lakehouse,v6,cap_data_lake
+p6,Informatica MDM,v7,cap_data_lake
+p7,Salesforce Data Cloud,v8,cap_data_lake
+p8,Boomi Master Data Hub,v10,cap_data_lake
+p9,SAP Master Data Governance,v13,cap_data_lake
+p10,IBM Cloud Pak for Data - Data Virtualization,v4,cap_data_virtualisation
+p11,Lakehouse Federation,v6,cap_data_virtualisation
+p12,Denodo Platform,v11,cap_data_virtualisation
+p13,SAP HANA Smart Data Access (SDA),v13,cap_data_virtualisation
+p14,AWS Lake Formation,v1,cap_data_governance
+p15,Microsoft Purview,v2,cap_data_governance
+p16,Dataplex,v3,cap_data_governance
+p17,watsonx.governance,v4,cap_data_governance
+p18,Unity Catalog,v6,cap_data_governance
+p19,Informatica Axon Data Governance,v7,cap_data_governance
+p20,Amazon Bedrock Guardrails,v1,cap_ai_compliance
+p21,Azure AI Content Safety / AI Studio Safety Evaluations,v2,cap_ai_compliance
+p22,watsonx.governance,v4,cap_ai_compliance
+p23,Mosaic AI Gateway,v6,cap_ai_compliance
+p24,Einstein Trust Layer,v8,cap_ai_compliance
+p25,Microsoft Purview,v2,cap_ai_governance
+p26,watsonx.governance,v4,cap_ai_governance
+p27,Unity Catalog,v6,cap_ai_governance
+p28,Amazon SageMaker Model Monitor,v1,cap_ai_monitoring
+p29,Azure Machine Learning Model Monitoring,v2,cap_ai_monitoring
+p30,Vertex AI Model Monitoring,v3,cap_ai_monitoring
+p31,Watson OpenScale,v4,cap_ai_monitoring
+p32,UiPath AI Center,v9,cap_ai_monitoring
+p33,Amazon Bedrock,v1,cap_ai_gateway
+p34,Azure API Management (AI Gateway),v2,cap_ai_gateway
+p35,Apigee AI Gateway,v3,cap_ai_gateway
+p36,Mosaic AI Gateway,v6,cap_ai_gateway
+p37,Amazon Bedrock Guardrails,v1,cap_ai_security
+p38,Azure AI Content Safety,v2,cap_ai_security
+p39,watsonx.governance,v4,cap_ai_security
+p40,Mosaic AI Gateway Guardrails,v6,cap_ai_security
+p41,Einstein Trust Layer,v8,cap_ai_security
+p42,Amazon SageMaker,v1,cap_model_management
+p43,Azure Machine Learning,v2,cap_model_management
+p44,Vertex AI Model Registry & Custom Training,v3,cap_model_management
+p45,watsonx.ai,v4,cap_model_management
+p46,MLflow + Databricks Model Serving,v6,cap_model_management
+p47,Einstein Studio (BYOM),v8,cap_model_management
+p48,UiPath AI Center,v9,cap_model_management
+p49,Amazon Bedrock,v1,cap_foundation_models
+p50,Azure OpenAI Service,v2,cap_foundation_models
+p51,Vertex AI Gemini,v3,cap_foundation_models
+p52,watsonx.ai Granite,v4,cap_foundation_models
+p53,Mosaic AI,v6,cap_foundation_models
+p54,Einstein Studio (LLM connectors),v8,cap_foundation_models
+p55,AWS DevOps,v1,cap_platform_deployment
+p56,Azure DevOps,v2,cap_platform_deployment
+p57,Google Cloud Build/Cloud Deploy,v3,cap_platform_deployment
+p58,IBM Cloud Continuous Delivery,v4,cap_platform_deployment
+p62,Amazon ECS,v1,cap_platform_hosting
+p63,Azure ACS,v2,cap_platform_hosting
+p64,Google GKE,v3,cap_platform_hosting
+p65,IBM Cloud Kubernetes Service,v4,cap_platform_hosting
+p69,S3,v1,cap_storage
+p70,Blob,v2,cap_storage
+p71,Cloud Storage,v3,cap_storage
+p72,Cloud Storage,v4,cap_storage
+p73,Databricks + Unstructured.io,v6,cap_storage
+p74,Amazon Redshift,v1,cap_db
+p75,Azure Fabric,v2,cap_db
+p76,BigQuery,v3,cap_db
+p77,IBM Db2 Warehouse,v4,cap_db
+p78,Databricks Lakehouse,v6,cap_db
+p79,IDMC (Data Integration/Quality),v7,cap_db
+p80,Salesforce Data Cloud,v8,cap_db
+p81,Denodo Platform,v11,cap_db
+p82,SAP HANA,v13,cap_db
+p83,DXC AI Engineering,v5,cap_ai_onboarding
+p84,DXC AI Engineering,v5,cap_ai_testing
+p85,DXC AI Engineering,v5,cap_ai_integrations
+p86,Langfuse,v5,cap_ai_monitoring
+p87,LiteLLM,v5,cap_ai_gateway
+p88,MLFlow,v5,cap_ai_governance
+p89,MLFlow,v5,cap_ai_compliance
+p90,MLFlow,v5,cap_ai_security
+p91,DXC AIW UI,v5,cap_web_uis
+p92,DXC AIW Developer Tools,v5,cap_developer_ecosystem

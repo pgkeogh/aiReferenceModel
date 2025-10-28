@@ -1,30 +1,48 @@
 // js/uiRenderer.js
-// Version: 2023-10-27_14 - Added detailed rendering logs
+// Version: 2025-01-27_15 - Added Source Systems container rendering support
 
 import { uiElements } from "./main.js";
 import { capabilities, products, vendors } from "./dataStore.js";
 import { openProductSelectionModal } from "./modals.js";
 
 /**
- * Renders all capability boxes into their respective containers (Data Layer, AI Layer)
+ * Renders all capability boxes into their respective containers (Source Systems, Data Layer, AI Layer)
  * based on their 'category', 'section', and 'order' properties.
  */
 export function renderAllCapabilityBoxes() {
+  const sourceContainer = uiElements.sourceSystemsCapabilitiesContainer;
   const dataContainer = uiElements.infrastructureDataCapabilitiesContainer;
   const aiContainer = uiElements.aiPlatformCapabilitiesContainer;
 
-  if (!dataContainer || !aiContainer) {
+  if (!sourceContainer || !dataContainer || !aiContainer) {
     console.error(
       "UI_RENDERER: One or more capability containers not found in uiElements. Check main.js and index.html."
     );
     return;
   }
 
+  sourceContainer.innerHTML = "";
   dataContainer.innerHTML = "";
   aiContainer.innerHTML = "";
 
+  const sourceSystemsCaps = capabilities.filter(
+    (c) => c.category === "Source Systems"
+  );
   const dataLayerCaps = capabilities.filter((c) => c.category === "Data Layer");
   const aiLayerCaps = capabilities.filter((c) => c.category === "AI Layer");
+
+  console.log(
+    "UI_RENDERER: Rendering Source Systems Capabilities:",
+    sourceSystemsCaps.map((c) => c.name)
+  );
+  if (sourceContainer) {
+    sourceSystemsCaps
+      .sort((a, b) => a.order - b.order)
+      .forEach((capability) => {
+        const capabilityBox = createCapabilityBox(capability);
+        sourceContainer.appendChild(capabilityBox);
+      });
+  }
 
   console.log(
     "UI_RENDERER: Rendering Data Layer Capabilities:",
@@ -99,7 +117,7 @@ export function renderAllCapabilityBoxes() {
 
 function createCapabilityBox(capability) {
   const box = document.createElement("div");
-  box.className = `flex-1 flex flex-col justify-between p-4 rounded-lg shadow-md min-h-[100px] cursor-pointer
+  box.className = `flex-1 flex flex-col justify-between p-3 rounded-lg shadow-md min-h-[90px] cursor-pointer
                      transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-1
                      ${
                        capability.borderColorClass || "border-purple-700"
@@ -107,12 +125,12 @@ function createCapabilityBox(capability) {
   box.dataset.capabilityId = capability.id;
 
   const capabilityName = document.createElement("h3");
-  capabilityName.className = "font-semibold text-lg mb-2";
+  capabilityName.className = "font-semibold text-base mb-2";
   capabilityName.textContent = capability.name;
   box.appendChild(capabilityName);
 
   const productName = document.createElement("p");
-  productName.className = "text-sm text-purple-300 italic";
+  productName.className = "text-xs text-purple-300 italic";
   productName.id = `product-name-${capability.id}`;
   box.appendChild(productName);
 

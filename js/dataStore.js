@@ -1,17 +1,55 @@
 // js/dataStore.js
-// Version: 2023-10-27_10 - Refined capability merge logic, corrected Data Layer capabilities
+// Version: 2025-01-27_11 - Added Source Systems category, moved 4 capabilities from Data Layer
 
 // Global data stores - these will be populated by loadData from csvHandler.js
 export let vendors = [];
 export let products = [];
 
 // Capabilities are now defined with their structural properties to match the graphic
-// 'category': for Data Layer vs AI Layer
+// 'category': for Source Systems, Data Layer, or AI Layer
 // 'section': for grouping within a layer (e.g., 'AI Layer - Top', 'AI Layer - UI')
 // 'order': for ordering within a section
 // 'borderColorClass': for visual styling (Tailwind CSS classes)
 // 'isLabel': true for non-interactive text labels like "Standards and protocols"
 export let capabilities = [
+  // --- Source Systems Capabilities ---
+  {
+    id: "cap_crm",
+    name: "CRM Systems",
+    category: "Source Systems",
+    section: "Source Systems",
+    order: 1,
+    borderColorClass: "border-green-600",
+    currentProductId: null,
+  },
+  {
+    id: "cap_erp",
+    name: "ERP Systems",
+    category: "Source Systems",
+    section: "Source Systems",
+    order: 2,
+    borderColorClass: "border-green-600",
+    currentProductId: null,
+  },
+  {
+    id: "cap_messaging_queues",
+    name: "Messaging & Queues",
+    category: "Source Systems",
+    section: "Source Systems",
+    order: 3,
+    borderColorClass: "border-green-600",
+    currentProductId: null,
+  },
+  {
+    id: "cap_api_gateways",
+    name: "API Gateways",
+    category: "Source Systems",
+    section: "Source Systems",
+    order: 4,
+    borderColorClass: "border-green-600",
+    currentProductId: null,
+  },
+
   // --- Data Layer Capabilities ---
   {
     id: "cap_data_lake",
@@ -41,57 +79,20 @@ export let capabilities = [
     currentProductId: null,
   },
   {
-    id: "cap_data_security",
-    name: "Data Security",
+    id: "cap_storage",
+    name: "Unstructured Data",
     category: "Data Layer",
     section: "Data Layer",
     order: 4,
     borderColorClass: "border-purple-600",
     currentProductId: null,
   },
-  // These capabilities were previously "Uncategorized" in your console log, now explicitly in Data Layer
   {
-    id: "cap_storage",
-    name: "Unstructured Data",
+    id: "cap_db",
+    name: "Structured Data",
     category: "Data Layer",
     section: "Data Layer",
     order: 5,
-    borderColorClass: "border-purple-600",
-    currentProductId: null,
-  },
-  {
-    id: "cap_crm",
-    name: "CRM Systems",
-    category: "Data Layer",
-    section: "Data Layer",
-    order: 6,
-    borderColorClass: "border-purple-600",
-    currentProductId: null,
-  },
-  {
-    id: "cap_erp",
-    name: "ERP Systems",
-    category: "Data Layer",
-    section: "Data Layer",
-    order: 7,
-    borderColorClass: "border-purple-600",
-    currentProductId: null,
-  },
-  {
-    id: "cap_messaging_queues",
-    name: "Messaging & Queues",
-    category: "Data Layer",
-    section: "Data Layer",
-    order: 8,
-    borderColorClass: "border-purple-600",
-    currentProductId: null,
-  },
-  {
-    id: "cap_api_gateways",
-    name: "API Gateways",
-    category: "Data Layer",
-    section: "Data Layer",
-    order: 9,
     borderColorClass: "border-purple-600",
     currentProductId: null,
   },
@@ -110,7 +111,7 @@ export let capabilities = [
   },
   {
     id: "cap_ai_testing",
-    name: "AI Testing",
+    name: "AI Evaluation",
     category: "AI Layer",
     section: "AI Layer - Top",
     order: 2,
@@ -209,8 +210,8 @@ export let capabilities = [
 
   // AI Layer - Models (Renamed from Advanced, DXC Bright Teal border)
   {
-    id: "cap_model_management_customization",
-    name: "Model Management + Customization",
+    id: "cap_model_management",
+    name: "Model Build and Management",
     category: "AI Layer",
     section: "AI Layer - Models",
     order: 1,
@@ -229,8 +230,8 @@ export let capabilities = [
 
   // AI Layer - Deployment (DXC Dark Teal border)
   {
-    id: "cap_ai_deployment",
-    name: "AI Deployment",
+    id: "cap_platform_deployment",
+    name: "AIW Platform Deployment",
     category: "AI Layer",
     section: "AI Layer - Deployment",
     order: 1,
@@ -238,8 +239,8 @@ export let capabilities = [
     currentProductId: null,
   },
   {
-    id: "cap_ai_hosting_scalability",
-    name: "AI Hosting + Scalability",
+    id: "cap_platform_hosting",
+    name: "AIW Platform Hosting",
     category: "AI Layer",
     section: "AI Layer - Deployment",
     order: 2,

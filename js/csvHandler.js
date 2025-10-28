@@ -1,5 +1,5 @@
 // js/csvHandler.js
-// Version: 2023-10-27_13 - Fixed vendor lookup to use vendor ID from products.csv
+// Version: 2025-01-27_17 - Fixed column name mapping to match CSV headers (vendorId, capabilityIds)
 
 import {
   vendors,
@@ -94,7 +94,7 @@ export async function loadData() {
     // Process Vendors
     const parsedVendors = csvVendors.map((row) => ({
       id: row.id || generateUniqueId(),
-      name: row.name || row.Vendor,
+      name: row.name || "Unnamed Vendor",
     }));
     setVendors(parsedVendors);
     console.log("CSV_HANDLER: Parsed Vendors from CSV:", vendors);
@@ -103,8 +103,8 @@ export async function loadData() {
     const parsedCapabilitiesFromCsv = csvCapabilities.map((row) => ({
       id:
         row.id ||
-        `cap_${(row.name || row.Capability).toLowerCase().replace(/\s/g, "_")}`,
-      name: row.name || row.Capability,
+        `cap_${(row.name || "unnamed").toLowerCase().replace(/\s/g, "_")}`,
+      name: row.name || "Unnamed Capability",
     }));
     setCapabilities(parsedCapabilitiesFromCsv);
     console.log(
@@ -114,15 +114,20 @@ export async function loadData() {
 
     // Process Products
     const parsedProducts = csvProducts.map((row) => {
-      // --- CRITICAL FIX: Match row.Vendor (which is the ID) against v.id ---
+      // Match row.vendorId against vendor.id
       const vendor = parsedVendors.find(
         (v) =>
-          v.id.toLowerCase().trim() === (row.Vendor || "").toLowerCase().trim()
+          v.id.toLowerCase().trim() ===
+          (row.vendorId || "").toLowerCase().trim()
       );
 
-      const capabilityIdsFromCsv = row.Capability
-        ? row.Capability.split(",").map((name) => name.trim())
-        : [];
+      // Split capabilityIds by comma - handle undefined, null, or empty string
+      const capabilityIdsFromCsv =
+        row.capabilityIds && row.capabilityIds.trim()
+          ? row.capabilityIds.split(",").map((id) => id.trim())
+          : [];
+
+      // Map capability IDs to actual capability objects
       const mappedCapabilityIds = capabilityIdsFromCsv
         .map((capIdFromCsv) => {
           const capability = capabilities.find(
@@ -131,7 +136,7 @@ export async function loadData() {
           if (!capability) {
             console.warn(
               `CSV_HANDLER: No matching capability found for ID: "${capIdFromCsv}" in product "${
-                row.name || row.Product
+                row.name || "Unnamed Product"
               }"`
             );
           }
@@ -141,16 +146,16 @@ export async function loadData() {
 
       const newProduct = {
         id: row.id || generateUniqueId(),
-        name: row.name || row.Product,
-        vendorId: vendor ? vendor.id : null, // Now vendor.id will be correctly assigned
+        name: row.name || "Unnamed Product",
+        vendorId: vendor ? vendor.id : null,
         capabilityIds: mappedCapabilityIds,
       };
 
       console.log(
-        `CSV_HANDLER: Processing product: "${newProduct.name}" (Row Vendor: "${
-          row.Vendor || "N/A"
-        }", Row Capability: "${
-          row.Capability || "N/A"
+        `CSV_HANDLER: Processing product: "${
+          newProduct.name
+        }" (Row vendorId: "${row.vendorId || "N/A"}", Row capabilityIds: "${
+          row.capabilityIds || "N/A"
         }") -> Mapped Vendor ID: ${
           newProduct.vendorId
         }, Mapped Capability IDs:`,

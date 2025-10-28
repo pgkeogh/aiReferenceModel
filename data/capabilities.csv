@@ -3,7 +3,7 @@ cap_data_lake,Data Lake & MDM
 cap_data_virtualisation,Data Virtualisation
 cap_data_governance,Data Governance
 cap_ai_onboarding,AI Onboarding
-cap_ai_testing,AI Testing
+cap_ai_testing,AI Evaluation
 cap_ai_integrations,AI Integrations
 cap_web_uis,WebUIs
 cap_developer_ecosystem,Developer Ecosystem
@@ -12,10 +12,11 @@ cap_ai_governance,AI Governance
 cap_ai_monitoring,AI Monitoring
 cap_ai_gateway,AI Gateway
 cap_ai_security,AI Security
-cap_model_management_customization,Model Management + Customization
+cap_model_management,Model Build and Management
 cap_foundation_models,LLM Solutions
-cap_ai_deployment,AI Deployment
-cap_ai_hosting_scalability,AI Hosting + Scalability
+cap_platform_deployment,AI Platform Deployment
+cap_platform_hosting,AI Platform Hosting
 cap_storage,Unstructured Data
+cap_db,Structured Data
 cap_crm,CRM Systems
 cap_erp,ERP Systems

@@ -1,5 +1,5 @@
 // js/main.js
-// Version: 2023-10-27_14 - Added detailed vendor product filtering logs
+// Version: 2025-01-27_16 - Implemented additive vendor product overlay logic
 
 import { vendors, products, capabilities } from "./dataStore.js";
 import { loadData } from "./csvHandler.js";
@@ -22,8 +22,11 @@ import { initializeDataEditorListeners } from "./dataEditor.js";
 export const uiElements = {};
 
 /**
- * Handles vendor selection, assigning products to capabilities based on the selected vendor
- * or falling back to Cloud Native Base Services.
+ * Handles vendor selection with additive overlay logic:
+ * - New vendor products OVERWRITE existing products where they match capabilities
+ * - Existing products are KEPT where new vendor has no match
+ * - "No Vendor Selected" CLEARS all assignments
+ * - Cloud Native Base Services only fills gaps INITIALLY (never overwrites)
  */
 export function handleVendorSelection() {
   console.log("MAIN_JS: handleVendorSelection called.");
@@ -43,6 +46,23 @@ export function handleVendorSelection() {
     "MAIN_JS: Current state of ALL capabilities before assignment:",
     capabilities
   );
+
+  // Handle "No Vendor Selected" - CLEAR ALL ASSIGNMENTS
+  if (!selectedVendorId) {
+    console.log(
+      "MAIN_JS: No vendor selected - clearing all capability assignments."
+    );
+    capabilities.forEach((capability) => {
+      if (!capability.isLabel) {
+        capability.currentProductId = null;
+        console.log(
+          `MAIN_JS: Cleared capability "${capability.name}" (${capability.id})`
+        );
+      }
+    });
+    updateCapabilityBoxProductDisplay();
+    return;
+  }
 
   const cloudNativeBaseProduct = products.find(
     (p) => p.name === "Cloud Native Base Services"
@@ -74,58 +94,90 @@ export function handleVendorSelection() {
     );
   }
 
+  // Get all products from the selected vendor
+  const vendorProducts = products.filter(
+    (p) => p.vendorId === selectedVendorId
+  );
+  console.log(
+    `MAIN_JS: For selected vendor ID "${selectedVendorId}", found products:`,
+    vendorProducts.map((p) => p.name)
+  );
+
   capabilities.forEach((capability) => {
     if (capability.isLabel) {
       console.log(`MAIN_JS: Skipping label capability: ${capability.name}`);
       return;
     }
 
-    let assignedProductId = null;
+    let newProductId = null;
 
-    // 1. Attempt to find a product from the CURRENTLY SELECTED VENDOR
-    if (selectedVendorId) {
-      const vendorProducts = products.filter(
-        (p) => p.vendorId === selectedVendorId
-      );
+    // 1. Try to find a product from the CURRENTLY SELECTED VENDOR
+    const matchingProduct = vendorProducts.find(
+      (p) => p.capabilityIds && p.capabilityIds.includes(capability.id)
+    );
+
+    if (matchingProduct) {
+      newProductId = matchingProduct.id;
       console.log(
-        `MAIN_JS: For selected vendor ID "${selectedVendorId}", found products:`,
-        vendorProducts.map((p) => p.name)
-      ); // <--- NEW KEY LOG
-
-      const matchingProduct = vendorProducts.find(
-        (p) => p.capabilityIds && p.capabilityIds.includes(capability.id)
+        `MAIN_JS: Capability "${capability.name}" (${capability.id}) found matching product "${matchingProduct.name}" from selected vendor.`
       );
-      if (matchingProduct) {
-        assignedProductId = matchingProduct.id;
-        console.log(
-          `MAIN_JS: Capability "${capability.name}" (${capability.id}) assigned product "${matchingProduct.name}" from selected vendor.`
-        );
-      } else {
-        console.log(
-          `MAIN_JS: For capability "${capability.name}", no matching product found from selected vendor "${selectedVendorId}".`
-        ); // <--- NEW KEY LOG
-      }
+    } else {
+      console.log(
+        `MAIN_JS: For capability "${capability.name}", no matching product found from selected vendor "${selectedVendorId}".`
+      );
     }
 
-    // 2. If no product was found from the SELECTED VENDOR,
-    //    then try the Cloud Native Base Services product as a fallback.
-    if (!assignedProductId && cloudNativeBaseProduct) {
+    // 2. If no product found from selected vendor AND capability has NO existing assignment,
+    //    try Cloud Native Base Services as initial fallback
+    if (
+      !newProductId &&
+      !capability.currentProductId &&
+      cloudNativeBaseProduct
+    ) {
       if (
         cloudNativeBaseProduct.capabilityIds &&
         cloudNativeBaseProduct.capabilityIds.includes(capability.id)
       ) {
-        assignedProductId = cloudNativeBaseProduct.id;
+        newProductId = cloudNativeBaseProduct.id;
         console.log(
-          `MAIN_JS: Capability "${capability.name}" (${capability.id}) assigned Cloud Native Base Services as fallback.`
+          `MAIN_JS: Capability "${capability.name}" (${capability.id}) assigned Cloud Native Base Services as initial fallback.`
         );
       }
     }
 
-    capability.currentProductId = assignedProductId;
-    if (!assignedProductId) {
-      console.log(
-        `MAIN_JS: Capability "${capability.name}" (${capability.id}) remains unassigned.`
-      );
+    // 3. ONLY UPDATE if we found a new product (additive overlay logic)
+    if (newProductId) {
+      const previousProductId = capability.currentProductId;
+      capability.currentProductId = newProductId;
+
+      if (previousProductId) {
+        const previousProduct = products.find(
+          (p) => p.id === previousProductId
+        );
+        const newProduct = products.find((p) => p.id === newProductId);
+        console.log(
+          `MAIN_JS: Capability "${capability.name}" (${capability.id}) OVERWRITTEN: "${previousProduct?.name}" → "${newProduct?.name}"`
+        );
+      } else {
+        const newProduct = products.find((p) => p.id === newProductId);
+        console.log(
+          `MAIN_JS: Capability "${capability.name}" (${capability.id}) ASSIGNED: "${newProduct?.name}"`
+        );
+      }
+    } else {
+      // No new product found - KEEP existing assignment
+      if (capability.currentProductId) {
+        const existingProduct = products.find(
+          (p) => p.id === capability.currentProductId
+        );
+        console.log(
+          `MAIN_JS: Capability "${capability.name}" (${capability.id}) KEEPING existing product: "${existingProduct?.name}"`
+        );
+      } else {
+        console.log(
+          `MAIN_JS: Capability "${capability.name}" (${capability.id}) remains unassigned.`
+        );
+      }
     }
   });
 
@@ -210,6 +262,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   uiElements.capabilityList = document.getElementById("capability-list");
   uiElements.chatMessages = document.getElementById("chat-messages");
 
+  // Container references for capability rendering
+  uiElements.sourceSystemsCapabilitiesContainer = document.getElementById(
+    "source-systems-capabilities-container"
+  );
   uiElements.infrastructureDataCapabilitiesContainer = document.getElementById(
     "infrastructure-data-capabilities-container"
   );
